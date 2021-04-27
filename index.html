@@ -50,8 +50,11 @@
     <p>
       Sharing interesting things I find on the internet here! Subscribe to my newsletter!
     </p>
-    <form>
-
+    <form action="https://tinyletter.com/buoyantair" method="post" target="popupwindow"
+      onsubmit="window.open('https://tinyletter.com/buoyantair', 'popupwindow', 'scrollbars=yes,width=800,height=600');return true">
+      <p><label for="tlemail">Enter your email address</label></p>
+      <p><input type="text" style="width:140px" name="email" id="tlemail" /></p><input type="hidden" value="1"
+        name="embed" /><input type="submit" value="Subscribe" />
     </form>
   </section>
 </body>
