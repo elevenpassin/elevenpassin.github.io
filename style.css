@@ -25,7 +25,7 @@ div.img {
 
 nav {
   display: grid;
-  grid-template-columns: repeat(3, min-content);
+  grid-template-columns: repeat(4, min-content);
   gap: 20px;
 }
 
