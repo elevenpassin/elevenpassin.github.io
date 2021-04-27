@@ -1,3 +1,7 @@
-section.jumbotron {
-  width: 80%;
+body {
+  grid-template-columns: 1fr 80% 1fr;
+}
+
+nav {
+  grid-template-columns: repeat(3, min-content);
 }

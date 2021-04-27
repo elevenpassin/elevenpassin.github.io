@@ -5,15 +5,18 @@ body {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 400px 1fr;
+  grid-auto-rows: max-content;
 }
 
-section.jumbotron {
-  width: 400px;
-  margin: 0 auto;
+section.page-section {
+  grid-column: 2;
   padding: 20px;
+}
+
+.jumbotron{ 
+  margin-top: 50%;
 }
 
 div.img {
