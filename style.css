@@ -27,13 +27,19 @@ div.img {
 }
 
 nav {
-  display: grid;
-  grid-template-columns: repeat(4, min-content);
-  gap: 20px;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
 }
 
 nav a {
   font-weight: 600;
+  margin-right: 10px;
+  padding-top: 10px;
+}
+
+nav a:last-child {
+  margin: 0;
 }
 
 a, a:visited {

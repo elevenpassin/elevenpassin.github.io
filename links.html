@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contact - buoyantair</title>
+  <title>buoyantair</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
   <link href="style.css" rel="stylesheet" />
   <link href="style.tablet.css" rel="stylesheet" media="screen and (max-width: 768px)" />
@@ -24,7 +24,7 @@
 </head>
 
 <body>
-  <section class="jumbotron">
+  <section class="jumbotron page-section">
     <div class="img"></div>
     <a href="/">
       <h1>buoyantair</h1>
@@ -41,12 +41,22 @@
       <a href="https://github.com/buoyantair/">code</a>
       <a href="https://box.buoyantair.co/blog">writings</a>
       <a href="/wiki">wiki</a>
-      <a href="./contact.html">wiki</a>
+      <a href="./contact.html">contact</a>
     </nav>
   </section>
 
-  <script src="//instant.page/5.1.0" type="module"
-    integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+  <section class="page-section">
+    <h2>Keep in touch</h2>
+    <p>
+      Sharing interesting things I find on the internet here! Subscribe to my newsletter!
+    </p>
+    <form action="https://tinyletter.com/buoyantair" method="post" target="popupwindow"
+      onsubmit="window.open('https://tinyletter.com/buoyantair', 'popupwindow', 'scrollbars=yes,width=800,height=600');return true">
+      <p><label for="tlemail">Enter your email address</label></p>
+      <p><input type="text" style="width:140px" name="email" id="tlemail" /></p><input type="hidden" value="1"
+        name="embed" /><input type="submit" value="Subscribe" />
+    </form>
+  </section>
 </body>
 
 </html>
