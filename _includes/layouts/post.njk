@@ -1,10 +1,12 @@
 ---
-layout: layouts/base.njk
+layout: layouts/page.njk
 ---
 
 {# Only include the syntax highlighter CSS on blog posts, included with the CSS per-page bundle #}
 {%- css %}{% include "node_modules/prismjs/themes/prism-okaidia.css" %}{% endcss %}
 {%- css %}{% include "public/styles/prism-diff.css" %}{%- endcss %}
+
+<section class="page-section">
 <h1>{{ title }}</h1>
 <ul class="post-metadata">
   <li>
@@ -38,3 +40,4 @@ layout: layouts/base.njk
         </ul>
       {%- endif %}
     {%- endif %}
+</section>
