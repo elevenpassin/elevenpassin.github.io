@@ -33,7 +33,7 @@ div.img {
   height: 100px;
   width: 100px;
   border-radius: 100%;
-  background: url(./alice.png) no-repeat center/cover;
+  background: url('../img/alice.png') no-repeat center/cover;
 }
 
 nav {
