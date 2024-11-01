@@ -1,0 +1,17 @@
+.page-header ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.page-header li {
+  margin-right: 10px;
+  align-self: flex-end;
+}
+
+.page-header li:first-child {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}

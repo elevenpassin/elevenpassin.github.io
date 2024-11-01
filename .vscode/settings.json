@@ -1,5 +1,6 @@
 {
   "[njk]": {
     "editor.formatOnSave": false
-  }
+  },
+  "editor.formatOnSave": true
 }

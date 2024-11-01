@@ -1,0 +1,12 @@
+body {
+  font-family: "Raleway", sans-serif;
+  padding: 20px;
+}
+
+a {
+  color: black;
+}
+
+a:visited {
+  color: #595959;
+}

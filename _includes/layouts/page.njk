@@ -3,5 +3,7 @@ layout: layouts/base.njk
 ---
 
 {%- css %}{% include "public/styles/page/style.css" %}{%- endcss %}
-{{ content | safe }}
 
+{% include "nav.njk" %}
+
+{{ content | safe }}
