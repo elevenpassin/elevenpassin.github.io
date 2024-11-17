@@ -11,7 +11,7 @@
   align-self: flex-end;
 }
 
-.page-header li:first-child {
+.page-header li#nav-item-home {
   font-size: 1.5rem;
   line-height: 1.5rem;
 }
