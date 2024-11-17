@@ -1,0 +1,18 @@
+.profile-img {
+  height: 100px;
+  width: 100px;
+  border-radius: 100%;
+  background: url('../img/alice.png') no-repeat center/cover;
+}
+
+nav {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+}
+
+nav a {
+  font-weight: 600;
+  margin-right: 10px;
+  padding-top: 10px;
+}

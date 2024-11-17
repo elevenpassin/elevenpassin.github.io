@@ -1,0 +1,12 @@
+.postlist-item {
+  margin-bottom: 16px;
+}
+
+.postlist-item a,
+.postlist-item time {
+  display: block;
+}
+
+.postlist-item a {
+  margin-bottom: 10px;
+}
