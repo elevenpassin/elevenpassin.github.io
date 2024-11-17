@@ -5,21 +5,22 @@ layout: layouts/page.njk
 {# Only include the syntax highlighter CSS on blog posts, included with the CSS per-page bundle #}
 {%- css %}{% include "node_modules/prismjs/themes/prism-okaidia.css" %}{% endcss %}
 {%- css %}{% include "public/styles/prism-diff.css" %}{%- endcss %}
+{%- css %}{% include "public/styles/post.css" %}{%- endcss %}
 
 <section class="page-section">
 <h1>{{ title }}</h1>
 <ul class="post-metadata">
   <li>
-    <time datetime="{{ page.date | htmlDateString }}">{{ page.date | readableDate }}</time>
+    <b>Published Date:</b> <time datetime="{{ page.date | htmlDateString }}">{{ page.date | readableDate }}</time>
   </li>
-  {%- for tag in tags | filterTagList %}
-    {%- set tagUrl %}/tags/{{ tag | slugify }}/{% endset %}
-    <li>
+  <li>
+    <b>Tags: </b>
+    {%- for tag in tags | filterTagList %}
+      {%- set tagUrl %}/tags/{{ tag | slugify }}/{% endset %}
       <a href="{{ tagUrl }}" class="post-tag">{{ tag }}</a>
-      {%- if not loop.last %},
-      {% endif %}
-    </li>
-  {%- endfor %}
+      {%- if not loop.last %},{% endif %}
+    {%- endfor %}
+  </li>
 </ul>
 {{ content | safe }}
 {%- if collections.posts %}
