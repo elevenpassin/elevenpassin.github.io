@@ -2,6 +2,8 @@
 layout: layouts/base.njk
 ---
 
+{% set indexPage = true %}
+
 {%- css %}{% include "public/styles/page/style.css" %}{%- endcss %}
 
 <section class="jumbotron page-section">
@@ -16,11 +18,5 @@ layout: layouts/base.njk
   <p>Find my resume
     <a href="/docs/resume.pdf" alt="Alice's resume">here</a>
   </p>
-  <nav>
-    <a href="https://github.com/elevenpassin/">code</a>
-    <a href="/blog">writings</a>
-    <a href="/wiki">wiki</a>
-    <a href="/links">links</a>
-    <a href="https://forms.gle/XHdJVvt21dXLYVZi8">contact</a>
-  </nav>
+  {% include "nav.njk" %}
 </section>

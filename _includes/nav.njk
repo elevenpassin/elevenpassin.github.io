@@ -2,7 +2,9 @@
 <header class="page-header">
   <nav>
     <ol>
-      <li><a href="/" alt="Go to Homepage">Alice Kile</a></li>
+      {% if not indexPage %}
+        <li id="nav-item-home"><a href="/" alt="Go to Homepage">Alice Kile</a></li>
+      {% endif %}
       <li><a href="https://github.com/elevenpassin/">code</a></li>
       <li><a href="/blog">writings</a></li>
       <li><a href="/wiki">wiki</a></li>
