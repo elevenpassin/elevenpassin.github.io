@@ -19,7 +19,7 @@
   margin-bottom: 10px;
 }
 .postlist { counter-reset: start-from
-  NaN }
+  2 }
 .page-header ol {
   list-style: none;
   padding: 0;
@@ -70,39 +70,28 @@
 </header>
 
 
----js
-// <script>
-const pagination = {
-	data: "collections",
-	size: 1,
-	alias: "tag",
-	filter: ["all", "posts"],
-	// addAllPagesToCollections: true,
-};
-
-const eleventyExcludeFromCollections = true;
-
-const eleventyComputed = {
-	title: "Tagged ''",
-	permalink: function(data) {
-		return `/tags/${this.slugify(data.tag)}/`;
-	}
-};
----
-<h1>Tagged “”</h1>
+<h1 id="tagged-second">Tagged “second”</h1>
 
 
 
 <section class="page-section">
-  <ol reversed class="postlist">
+  <ol reversed="" class="postlist">
+    
+      <li class="postlist-item">
+        <a href="/blog/helloworld/" class="postlist-link">
+          
+            Hello World
+          
+        </a>
+        <time class="postlist-date" datetime="2024-11-17">November 2024</time>
+      </li>
     
   </ol>
 </section>
 
 
-<p>See <a href="tags.njk">all tags</a>.</p>
+<p>See <a href="/tags/">all tags</a>.</p>
 
 
   </body>
 </html>
-</script></body></html>
