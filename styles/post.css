@@ -1,3 +1,8 @@
+.post-metadata {
+  list-style: none;
+  padding: 0;
+}
+
 .links-nextprev {
   display: flex;
   flex-flow: row;
