@@ -1,8 +1,9 @@
-import "./darkreader.js";
-console.log(window.DarkReader)
+import * as DarkReader from "./darkreader.js";
+
 // Enable when the system color scheme is dark.
 DarkReader.auto({
-  brightness: 100,
-  contrast: 90,
-  sepia: 10
+  brightness: 0,
+  contrast: 50,
+  sepia: 0,
+  grayscale: 0
 });
