@@ -25,7 +25,8 @@
     "zod-validation-error": "^3.3.1"
   },
   "dependencies": {
-    "@zachleat/heading-anchors": "^1.0.1"
+    "@zachleat/heading-anchors": "^1.0.1",
+    "darkreader": "^4.9.105"
   },
   "engines": {
     "node": ">=18"

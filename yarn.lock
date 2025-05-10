@@ -489,6 +489,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/rollup-linux-x64-gnu@npm:4.34.8":
+  version: 4.34.8
+  resolution: "@rollup/rollup-linux-x64-gnu@npm:4.34.8"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@rollup/rollup-win32-x64-msvc@npm:4.34.8":
+  version: 4.34.8
+  resolution: "@rollup/rollup-win32-x64-msvc@npm:4.34.8"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/slugify@npm:^2.2.1":
   version: 2.2.1
   resolution: "@sindresorhus/slugify@npm:2.2.1"
@@ -918,6 +932,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"darkreader@npm:^4.9.105":
+  version: 4.9.105
+  resolution: "darkreader@npm:4.9.105"
+  dependencies:
+    "@rollup/rollup-linux-x64-gnu": "npm:4.34.8"
+    "@rollup/rollup-win32-x64-msvc": "npm:4.34.8"
+    malevic: "npm:0.20.2"
+  dependenciesMeta:
+    "@rollup/rollup-linux-x64-gnu":
+      optional: true
+    "@rollup/rollup-win32-x64-msvc":
+      optional: true
+  checksum: 10c0/8a0d6cd95d7083bd5e3c2baca9e931e6a1971f7923108104a3205057542659d2d9e97eb4be50cee3d6085fd9bbb8a74b75383473205ec2d51cd13f2ffe15d0cf
+  languageName: node
+  linkType: hard
+
 "debug@npm:2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
@@ -1087,6 +1117,7 @@ __metadata:
     "@11ty/eleventy-plugin-syntaxhighlight": "npm:^5.0.0"
     "@zachleat/heading-anchors": "npm:^1.0.1"
     cross-env: "npm:^7.0.3"
+    darkreader: "npm:^4.9.105"
     luxon: "npm:^3.5.0"
     prismjs: "npm:^1.29.0"
     zod: "npm:^3.23.8"
@@ -1877,6 +1908,13 @@ __metadata:
     promise-retry: "npm:^2.0.1"
     ssri: "npm:^10.0.0"
   checksum: 10c0/df5f4dbb6d98153b751bccf4dc4cc500de85a96a9331db9805596c46aa9f99d9555983954e6c1266d9f981ae37a9e4647f42b9a4bb5466f867f4012e582c9e7e
+  languageName: node
+  linkType: hard
+
+"malevic@npm:0.20.2":
+  version: 0.20.2
+  resolution: "malevic@npm:0.20.2"
+  checksum: 10c0/cff8b3b724a5ac8e6688930997420374a06c1a34cac610a79e76ca53b654970f147ec55e5e2757cd3713940a56a1f7bfb82d64884fd26c88c79fec76a46c2ddf
   languageName: node
   linkType: hard
 
