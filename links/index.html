@@ -9,21 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="/styles/base.css" rel="stylesheet">
-    <style>.postlist-item {
-  margin-bottom: 16px;
-}
-
-.postlist-item a,
-.postlist-item time {
-  display: block;
-}
-
-.postlist-item a {
-  margin-bottom: 10px;
-}
-.postlist { counter-reset: start-from
-  2 }
-.page-header {
+    <style>.page-header {
   margin-bottom: 20px;
 }
 
@@ -76,27 +62,36 @@
 </header>
 
 
-<h1 id="tagged-second">Tagged “second”</h1>
-
-
-
-<section class="page-section">
-  <ol reversed="" class="postlist">
-    
-      <li class="postlist-item">
-        <a href="/blog/helloworld/" class="postlist-link">
-          
-            Hello World
-          
-        </a>
-        <time class="postlist-date" datetime="2024-11-17">November 2024</time>
-      </li>
-    
-  </ol>
+<section>
+  <table>
+      <thead>
+        <tr>
+          <th>
+            Item
+          </th>
+          <th>
+            Description
+          </th>
+          <th>
+            Link
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            Beepbox
+          </td>
+          <td>
+            Super cool MIDI tool online!
+          </td>
+          <td>
+            <a alt="Link to beepbox" href="/beepbox/">Go</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 </section>
-
-
-<p>See <a href="/tags/">all tags</a>.</p>
 
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>
