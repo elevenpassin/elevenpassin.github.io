@@ -45,4 +45,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_site
-      - run: ls /home/runner/work/elevenpassin.github.io/elevenpassin.github.io
