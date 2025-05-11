@@ -1,0 +1,12 @@
+.post-metadata {
+  list-style: none;
+  padding: 0;
+}
+
+.links-nextprev {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  list-style: none;
+  padding: 0;
+}

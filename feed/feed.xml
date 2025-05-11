@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="pretty-atom-feed.xsl" type="text/xsl"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>Alice Kile&#39;s Blog</title>
+  <subtitle>Alice&#39;s web log</subtitle>
+  <link href="https://alicekile.dev/feed/feed.xml" rel="self" />
+  <link href="https://alicekile.dev/" />
+  <updated>2024-11-17T00:00:00Z</updated>
+  <id>https://alicekile.dev/</id>
+  <author>
+    <name>Alice Kile</name>
+  </author>
+  <entry>
+    <title>Hello World</title>
+    <link href="https://alicekile.dev/blog/helloworld/" />
+    <updated>2024-11-17T00:00:00Z</updated>
+    <id>https://alicekile.dev/blog/helloworld/</id>
+    <content type="html">&lt;p&gt;This is my first blog post!&lt;/p&gt;
+</content>
+  </entry>
+</feed>
