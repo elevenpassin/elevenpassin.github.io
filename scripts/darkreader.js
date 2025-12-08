@@ -1,5 +1,5 @@
 /**
- * Dark Reader v4.9.105
+ * Dark Reader v4.9.117
  * https://darkreader.org/
  */
 
@@ -29,6 +29,8 @@ var MessageTypeUItoBG;
         "ui-bg-apply-dev-static-themes";
     MessageTypeUItoBG["RESET_DEV_STATIC_THEMES"] =
         "ui-bg-reset-dev-static-themes";
+    MessageTypeUItoBG["START_ACTIVATION"] = "ui-bg-start-activation";
+    MessageTypeUItoBG["RESET_ACTIVATION"] = "ui-bg-reset-activation";
     MessageTypeUItoBG["COLOR_SCHEME_CHANGE"] = "ui-bg-color-scheme-change";
     MessageTypeUItoBG["HIDE_HIGHLIGHTS"] = "ui-bg-hide-highlights";
 })(MessageTypeUItoBG || (MessageTypeUItoBG = {}));
@@ -105,7 +107,7 @@ const isWindows = platform.startsWith("win");
 const isMacOS = platform.startsWith("mac");
 isNavigatorDefined && navigator.userAgentData
     ? navigator.userAgentData.mobile
-    : userAgent.includes("mobile");
+    : userAgent.includes("mobile") || false;
 const isShadowDomSupported = typeof ShadowRoot === "function";
 const isMatchMediaChangeEventListenerSupported =
     typeof MediaQueryList === "function" &&
@@ -355,9 +357,7 @@ const filterModeSites = [
 ];
 ({
     customThemes: filterModeSites.map((url) => {
-        const engine = isChromium
-            ? ThemeEngine.svgFilter
-            : ThemeEngine.cssFilter;
+        const engine = ThemeEngine.cssFilter;
         return {
             url: [url],
             theme: {...DEFAULT_THEME, engine},
@@ -956,10 +956,16 @@ const supportedColorFuncs = [
 function parse($color) {
     const c = $color.trim().toLowerCase();
     if (c.includes("(from ")) {
+        if (c.indexOf("(from") !== c.lastIndexOf("(from")) {
+            return null;
+        }
         return domParseColor(c);
     }
     if (c.match(rgbMatch)) {
         if (c.startsWith("rgb(#") || c.startsWith("rgba(#")) {
+            if (c.lastIndexOf("rgb") > 0) {
+                return null;
+            }
             return domParseColor(c);
         }
         return parseRGB(c);
@@ -982,7 +988,10 @@ function parse($color) {
     if (
         c.endsWith(")") &&
         supportedColorFuncs.some(
-            (fn) => c.startsWith(fn) && c[fn.length] === "("
+            (fn) =>
+                c.startsWith(fn) &&
+                c[fn.length] === "(" &&
+                c.lastIndexOf(fn) === 0
         )
     ) {
         return domParseColor(c);
@@ -1798,6 +1807,9 @@ function iterateCSSRules(rules, iterate, onImportError) {
     forEach(rules, (rule) => {
         if (isStyleRule(rule)) {
             iterate(rule);
+            if (rule.cssRules?.length > 0) {
+                iterateCSSRules(rule.cssRules, iterate);
+            }
         } else if (isImportRule(rule)) {
             try {
                 iterateCSSRules(
@@ -1816,10 +1828,10 @@ function iterateCSSRules(rules, iterate, onImportError) {
                     m.startsWith("all") ||
                     m.startsWith("(")
             );
-            const isPrintOrSpeech = media.some(
-                (m) => m.startsWith("print") || m.startsWith("speech")
-            );
-            if (isScreenOrAllOrQuery || !isPrintOrSpeech) {
+            const isNotScreen =
+                !isScreenOrAllOrQuery &&
+                media.some((m) => ignoredMedia.some((i) => m.startsWith(i)));
+            if (isScreenOrAllOrQuery || !isNotScreen) {
                 iterateCSSRules(rule.cssRules, iterate, onImportError);
             }
         } else if (isSupportsRule(rule)) {
@@ -1833,6 +1845,17 @@ function iterateCSSRules(rules, iterate, onImportError) {
         }
     });
 }
+const ignoredMedia = [
+    "aural",
+    "braille",
+    "embossed",
+    "handheld",
+    "print",
+    "projection",
+    "speech",
+    "tty",
+    "tv"
+];
 const shorthandVarDependantProperties = [
     "background",
     "border",
@@ -1878,7 +1901,8 @@ function iterateCSSDeclarations(style, iterate) {
         }
     }
     if (
-        cssText.includes("background-color: ;") &&
+        (cssText.includes("background-color: ;") ||
+            cssText.includes("background-image: ;")) &&
         !style.getPropertyValue("background")
     ) {
         handleEmptyShorthand("background", style, iterate);
@@ -1911,6 +1935,7 @@ function handleEmptyShorthand(shorthand, style, iterate) {
             }
         } else if (shorthand === "background") {
             iterate("background-color", "#ffffff");
+            iterate("background-image", "none");
         }
     }
 }
@@ -2053,6 +2078,321 @@ function getSheetScope(sheet) {
         node = node.parentNode;
     }
     return null;
+}
+
+let variablesSheet;
+const registeredColors = new Map();
+function registerVariablesSheet(sheet) {
+    variablesSheet = sheet;
+    const types = ["background", "text", "border"];
+    registeredColors.forEach((registered) => {
+        types.forEach((type) => {
+            if (registered[type]) {
+                const {variable, value} = registered[type];
+                variablesSheet?.cssRules[0].style.setProperty(variable, value);
+            }
+        });
+    });
+}
+function releaseVariablesSheet() {
+    variablesSheet = null;
+    clearColorPalette();
+}
+function getRegisteredVariableValue(type, registered) {
+    return `var(${registered[type].variable}, ${registered[type].value})`;
+}
+function getRegisteredColor(type, parsed) {
+    const hex = rgbToHexString(parsed);
+    const registered = registeredColors.get(hex);
+    if (registered?.[type]) {
+        return getRegisteredVariableValue(type, registered);
+    }
+    return null;
+}
+function registerColor(type, parsed, value) {
+    const hex = rgbToHexString(parsed);
+    let registered;
+    if (registeredColors.has(hex)) {
+        registered = registeredColors.get(hex);
+    } else {
+        const parsed = parseColorWithCache(hex);
+        registered = {parsed};
+        registeredColors.set(hex, registered);
+    }
+    const variable = `--darkreader-${type}-${hex.replace("#", "")}`;
+    registered[type] = {variable, value};
+    if (variablesSheet?.cssRules[0]?.style) {
+        variablesSheet?.cssRules[0].style.setProperty(variable, value);
+    }
+    return getRegisteredVariableValue(type, registered);
+}
+function getColorPalette() {
+    const background = [];
+    const border = [];
+    const text = [];
+    registeredColors.forEach((registered) => {
+        if (registered.background) {
+            background.push(registered.parsed);
+        }
+        if (registered.border) {
+            border.push(registered.parsed);
+        }
+        if (registered.text) {
+            text.push(registered.parsed);
+        }
+    });
+    return {background, border, text};
+}
+function clearColorPalette() {
+    registeredColors.clear();
+}
+
+function getBgPole(theme) {
+    const isDarkScheme = theme.mode === 1;
+    const prop = isDarkScheme
+        ? "darkSchemeBackgroundColor"
+        : "lightSchemeBackgroundColor";
+    return theme[prop];
+}
+function getFgPole(theme) {
+    const isDarkScheme = theme.mode === 1;
+    const prop = isDarkScheme ? "darkSchemeTextColor" : "lightSchemeTextColor";
+    return theme[prop];
+}
+const colorModificationCache = new Map();
+function clearColorModificationCache() {
+    colorModificationCache.clear();
+}
+const rgbCacheKeys = ["r", "g", "b", "a"];
+const themeCacheKeys = [
+    "mode",
+    "brightness",
+    "contrast",
+    "grayscale",
+    "sepia",
+    "darkSchemeBackgroundColor",
+    "darkSchemeTextColor",
+    "lightSchemeBackgroundColor",
+    "lightSchemeTextColor"
+];
+function getCacheId(rgb, theme) {
+    let resultId = "";
+    rgbCacheKeys.forEach((key) => {
+        resultId += `${rgb[key]};`;
+    });
+    themeCacheKeys.forEach((key) => {
+        resultId += `${theme[key]};`;
+    });
+    return resultId;
+}
+function modifyColorWithCache(
+    rgb,
+    theme,
+    modifyHSL,
+    poleColor,
+    anotherPoleColor
+) {
+    let fnCache;
+    if (colorModificationCache.has(modifyHSL)) {
+        fnCache = colorModificationCache.get(modifyHSL);
+    } else {
+        fnCache = new Map();
+        colorModificationCache.set(modifyHSL, fnCache);
+    }
+    const id = getCacheId(rgb, theme);
+    if (fnCache.has(id)) {
+        return fnCache.get(id);
+    }
+    const hsl = rgbToHSL(rgb);
+    const pole = poleColor == null ? null : parseToHSLWithCache(poleColor);
+    const anotherPole =
+        anotherPoleColor == null ? null : parseToHSLWithCache(anotherPoleColor);
+    const modified = modifyHSL(hsl, pole, anotherPole);
+    const {r, g, b, a} = hslToRGB(modified);
+    const matrix = createFilterMatrix({...theme, mode: 0});
+    const [rf, gf, bf] = applyColorMatrix([r, g, b], matrix);
+    const color =
+        a === 1
+            ? rgbToHexString({r: rf, g: gf, b: bf})
+            : rgbToString({r: rf, g: gf, b: bf, a});
+    fnCache.set(id, color);
+    return color;
+}
+function modifyAndRegisterColor(type, rgb, theme, modifier) {
+    const registered = getRegisteredColor(type, rgb);
+    if (registered) {
+        return registered;
+    }
+    const value = modifier(rgb, theme);
+    return registerColor(type, rgb, value);
+}
+function modifyLightSchemeColor(rgb, theme) {
+    const poleBg = getBgPole(theme);
+    const poleFg = getFgPole(theme);
+    return modifyColorWithCache(rgb, theme, modifyLightModeHSL, poleFg, poleBg);
+}
+function modifyLightModeHSL({h, s, l, a}, poleFg, poleBg) {
+    const isDark = l < 0.5;
+    let isNeutral;
+    if (isDark) {
+        isNeutral = l < 0.2 || s < 0.12;
+    } else {
+        const isBlue = h > 200 && h < 280;
+        isNeutral = s < 0.24 || (l > 0.8 && isBlue);
+    }
+    let hx = h;
+    let sx = s;
+    if (isNeutral) {
+        if (isDark) {
+            hx = poleFg.h;
+            sx = poleFg.s;
+        } else {
+            hx = poleBg.h;
+            sx = poleBg.s;
+        }
+    }
+    const lx = scale(l, 0, 1, poleFg.l, poleBg.l);
+    return {h: hx, s: sx, l: lx, a};
+}
+const MAX_BG_LIGHTNESS = 0.4;
+function modifyBgHSL({h, s, l, a}, pole) {
+    const isDark = l < 0.5;
+    const isBlue = h > 200 && h < 280;
+    const isNeutral = s < 0.12 || (l > 0.8 && isBlue);
+    if (isDark) {
+        const lx = scale(l, 0, 0.5, 0, MAX_BG_LIGHTNESS);
+        if (isNeutral) {
+            const hx = pole.h;
+            const sx = pole.s;
+            return {h: hx, s: sx, l: lx, a};
+        }
+        return {h, s, l: lx, a};
+    }
+    let lx = scale(l, 0.5, 1, MAX_BG_LIGHTNESS, pole.l);
+    if (isNeutral) {
+        const hx = pole.h;
+        const sx = pole.s;
+        return {h: hx, s: sx, l: lx, a};
+    }
+    let hx = h;
+    const isYellow = h > 60 && h < 180;
+    if (isYellow) {
+        const isCloserToGreen = h > 120;
+        if (isCloserToGreen) {
+            hx = scale(h, 120, 180, 135, 180);
+        } else {
+            hx = scale(h, 60, 120, 60, 105);
+        }
+    }
+    if (hx > 40 && hx < 80) {
+        lx *= 0.75;
+    }
+    return {h: hx, s, l: lx, a};
+}
+function _modifyBackgroundColor(rgb, theme) {
+    if (theme.mode === 0) {
+        return modifyLightSchemeColor(rgb, theme);
+    }
+    const pole = getBgPole(theme);
+    return modifyColorWithCache(rgb, theme, modifyBgHSL, pole);
+}
+function modifyBackgroundColor(rgb, theme, shouldRegisterColorVariable = true) {
+    if (!shouldRegisterColorVariable) {
+        return _modifyBackgroundColor(rgb, theme);
+    }
+    return modifyAndRegisterColor(
+        "background",
+        rgb,
+        theme,
+        _modifyBackgroundColor
+    );
+}
+const MIN_FG_LIGHTNESS = 0.55;
+function modifyBlueFgHue(hue) {
+    return scale(hue, 205, 245, 205, 220);
+}
+function modifyFgHSL({h, s, l, a}, pole) {
+    const isLight = l > 0.5;
+    const isNeutral = l < 0.2 || s < 0.24;
+    const isBlue = !isNeutral && h > 205 && h < 245;
+    if (isLight) {
+        const lx = scale(l, 0.5, 1, MIN_FG_LIGHTNESS, pole.l);
+        if (isNeutral) {
+            const hx = pole.h;
+            const sx = pole.s;
+            return {h: hx, s: sx, l: lx, a};
+        }
+        let hx = h;
+        if (isBlue) {
+            hx = modifyBlueFgHue(h);
+        }
+        return {h: hx, s, l: lx, a};
+    }
+    if (isNeutral) {
+        const hx = pole.h;
+        const sx = pole.s;
+        const lx = scale(l, 0, 0.5, pole.l, MIN_FG_LIGHTNESS);
+        return {h: hx, s: sx, l: lx, a};
+    }
+    let hx = h;
+    let lx;
+    if (isBlue) {
+        hx = modifyBlueFgHue(h);
+        lx = scale(l, 0, 0.5, pole.l, Math.min(1, MIN_FG_LIGHTNESS + 0.05));
+    } else {
+        lx = scale(l, 0, 0.5, pole.l, MIN_FG_LIGHTNESS);
+    }
+    return {h: hx, s, l: lx, a};
+}
+function _modifyForegroundColor(rgb, theme) {
+    if (theme.mode === 0) {
+        return modifyLightSchemeColor(rgb, theme);
+    }
+    const pole = getFgPole(theme);
+    return modifyColorWithCache(rgb, theme, modifyFgHSL, pole);
+}
+function modifyForegroundColor(rgb, theme, shouldRegisterColorVariable = true) {
+    if (!shouldRegisterColorVariable) {
+        return _modifyForegroundColor(rgb, theme);
+    }
+    return modifyAndRegisterColor("text", rgb, theme, _modifyForegroundColor);
+}
+function modifyBorderHSL({h, s, l, a}, poleFg, poleBg) {
+    const isDark = l < 0.5;
+    const isNeutral = l < 0.2 || s < 0.24;
+    let hx = h;
+    let sx = s;
+    if (isNeutral) {
+        if (isDark) {
+            hx = poleFg.h;
+            sx = poleFg.s;
+        } else {
+            hx = poleBg.h;
+            sx = poleBg.s;
+        }
+    }
+    const lx = scale(l, 0, 1, 0.5, 0.2);
+    return {h: hx, s: sx, l: lx, a};
+}
+function _modifyBorderColor(rgb, theme) {
+    if (theme.mode === 0) {
+        return modifyLightSchemeColor(rgb, theme);
+    }
+    const poleFg = getFgPole(theme);
+    const poleBg = getBgPole(theme);
+    return modifyColorWithCache(rgb, theme, modifyBorderHSL, poleFg, poleBg);
+}
+function modifyBorderColor(rgb, theme, shouldRegisterColorVariable = true) {
+    if (!shouldRegisterColorVariable) {
+        return _modifyBorderColor(rgb, theme);
+    }
+    return modifyAndRegisterColor("border", rgb, theme, _modifyBorderColor);
+}
+function modifyShadowColor(rgb, theme) {
+    return modifyBackgroundColor(rgb, theme);
+}
+function modifyGradientColor(rgb, theme) {
+    return modifyBackgroundColor(rgb, theme);
 }
 
 const gradientLength = "gradient".length;
@@ -2233,6 +2573,10 @@ async function bgFetch(request) {
     if (window.DarkReader?.Plugins?.fetch) {
         return window.DarkReader.Plugins.fetch(request);
     }
+    const parsedURL = new URL(request.url);
+    if (parsedURL.origin !== request.origin && shouldIgnoreCors(parsedURL)) {
+        throw new Error("Cross-origin limit reached");
+    }
     return new Promise((resolve, reject) => {
         const id = generateUID();
         resolvers$1.set(id, resolve);
@@ -2251,12 +2595,32 @@ chrome.runtime.onMessage.addListener(({type, data, error, id}) => {
         resolvers$1.delete(id);
         rejectors.delete(id);
         if (error) {
-            reject && reject(error);
+            reject &&
+                reject(typeof error === "string" ? new Error(error) : error);
         } else {
             resolve && resolve(data);
         }
     }
 });
+const ipV4RegExp = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+const MAX_CORS_DOMAINS = 16;
+const corsDomains = new Set();
+function shouldIgnoreCors(url) {
+    const host = url.hostname;
+    if (!corsDomains.has(host)) {
+        corsDomains.add(host);
+    }
+    if (
+        corsDomains.size >= MAX_CORS_DOMAINS ||
+        host === "localhost" ||
+        host.startsWith("[") ||
+        host.endsWith(".local") ||
+        host.match(ipV4RegExp)
+    ) {
+        return true;
+    }
+    return false;
+}
 
 const imageManager = new AsyncQueue();
 async function getImageDetails(url) {
@@ -2295,7 +2659,11 @@ async function getDataURL(url) {
     if (parsedURL.origin === location.origin) {
         return await loadAsDataURL(url);
     }
-    return await bgFetch({url, responseType: "data-url"});
+    return await bgFetch({
+        url,
+        responseType: "data-url",
+        origin: location.origin
+    });
 }
 async function tryCreateImageBitmap(blob) {
     try {
@@ -2545,327 +2913,6 @@ function cleanImageProcessingCache() {
     objectURLs.clear();
     dataURLBlobURLs.forEach((u) => URL.revokeObjectURL(u));
     dataURLBlobURLs.clear();
-}
-
-let variablesSheet;
-const registeredColors = new Map();
-function registerVariablesSheet(sheet) {
-    variablesSheet = sheet;
-    const types = ["background", "text", "border"];
-    registeredColors.forEach((registered) => {
-        types.forEach((type) => {
-            if (registered[type]) {
-                const {variable, value} = registered[type];
-                variablesSheet?.cssRules[0].style.setProperty(variable, value);
-            }
-        });
-    });
-}
-function releaseVariablesSheet() {
-    variablesSheet = null;
-    clearColorPalette();
-}
-function getRegisteredVariableValue(type, registered) {
-    return `var(${registered[type].variable}, ${registered[type].value})`;
-}
-function getRegisteredColor(type, parsed) {
-    const hex = rgbToHexString(parsed);
-    const registered = registeredColors.get(hex);
-    if (registered?.[type]) {
-        return getRegisteredVariableValue(type, registered);
-    }
-    return null;
-}
-function registerColor(type, parsed, value) {
-    const hex = rgbToHexString(parsed);
-    let registered;
-    if (registeredColors.has(hex)) {
-        registered = registeredColors.get(hex);
-    } else {
-        const parsed = parseColorWithCache(hex);
-        registered = {parsed};
-        registeredColors.set(hex, registered);
-    }
-    const variable = `--darkreader-${type}-${hex.replace("#", "")}`;
-    registered[type] = {variable, value};
-    if (variablesSheet?.cssRules[0]?.style) {
-        variablesSheet?.cssRules[0].style.setProperty(variable, value);
-    }
-    return getRegisteredVariableValue(type, registered);
-}
-function getColorPalette() {
-    const background = [];
-    const border = [];
-    const text = [];
-    registeredColors.forEach((registered) => {
-        if (registered.background) {
-            background.push(registered.parsed);
-        }
-        if (registered.border) {
-            border.push(registered.parsed);
-        }
-        if (registered.text) {
-            text.push(registered.parsed);
-        }
-    });
-    return {background, border, text};
-}
-function clearColorPalette() {
-    registeredColors.clear();
-}
-
-function getBgPole(theme) {
-    const isDarkScheme = theme.mode === 1;
-    const prop = isDarkScheme
-        ? "darkSchemeBackgroundColor"
-        : "lightSchemeBackgroundColor";
-    return theme[prop];
-}
-function getFgPole(theme) {
-    const isDarkScheme = theme.mode === 1;
-    const prop = isDarkScheme ? "darkSchemeTextColor" : "lightSchemeTextColor";
-    return theme[prop];
-}
-const colorModificationCache = new Map();
-function clearColorModificationCache() {
-    colorModificationCache.clear();
-}
-const rgbCacheKeys = ["r", "g", "b", "a"];
-const themeCacheKeys$1 = [
-    "mode",
-    "brightness",
-    "contrast",
-    "grayscale",
-    "sepia",
-    "darkSchemeBackgroundColor",
-    "darkSchemeTextColor",
-    "lightSchemeBackgroundColor",
-    "lightSchemeTextColor"
-];
-function getCacheId(rgb, theme) {
-    let resultId = "";
-    rgbCacheKeys.forEach((key) => {
-        resultId += `${rgb[key]};`;
-    });
-    themeCacheKeys$1.forEach((key) => {
-        resultId += `${theme[key]};`;
-    });
-    return resultId;
-}
-function modifyColorWithCache(
-    rgb,
-    theme,
-    modifyHSL,
-    poleColor,
-    anotherPoleColor
-) {
-    let fnCache;
-    if (colorModificationCache.has(modifyHSL)) {
-        fnCache = colorModificationCache.get(modifyHSL);
-    } else {
-        fnCache = new Map();
-        colorModificationCache.set(modifyHSL, fnCache);
-    }
-    const id = getCacheId(rgb, theme);
-    if (fnCache.has(id)) {
-        return fnCache.get(id);
-    }
-    const hsl = rgbToHSL(rgb);
-    const pole = poleColor == null ? null : parseToHSLWithCache(poleColor);
-    const anotherPole =
-        anotherPoleColor == null ? null : parseToHSLWithCache(anotherPoleColor);
-    const modified = modifyHSL(hsl, pole, anotherPole);
-    const {r, g, b, a} = hslToRGB(modified);
-    const matrix = createFilterMatrix(theme);
-    const [rf, gf, bf] = applyColorMatrix([r, g, b], matrix);
-    const color =
-        a === 1
-            ? rgbToHexString({r: rf, g: gf, b: bf})
-            : rgbToString({r: rf, g: gf, b: bf, a});
-    fnCache.set(id, color);
-    return color;
-}
-function modifyAndRegisterColor(type, rgb, theme, modifier) {
-    const registered = getRegisteredColor(type, rgb);
-    if (registered) {
-        return registered;
-    }
-    const value = modifier(rgb, theme);
-    return registerColor(type, rgb, value);
-}
-function modifyLightSchemeColor(rgb, theme) {
-    const poleBg = getBgPole(theme);
-    const poleFg = getFgPole(theme);
-    return modifyColorWithCache(rgb, theme, modifyLightModeHSL, poleFg, poleBg);
-}
-function modifyLightModeHSL({h, s, l, a}, poleFg, poleBg) {
-    const isDark = l < 0.5;
-    let isNeutral;
-    if (isDark) {
-        isNeutral = l < 0.2 || s < 0.12;
-    } else {
-        const isBlue = h > 200 && h < 280;
-        isNeutral = s < 0.24 || (l > 0.8 && isBlue);
-    }
-    let hx = h;
-    let sx = l;
-    if (isNeutral) {
-        if (isDark) {
-            hx = poleFg.h;
-            sx = poleFg.s;
-        } else {
-            hx = poleBg.h;
-            sx = poleBg.s;
-        }
-    }
-    const lx = scale(l, 0, 1, poleFg.l, poleBg.l);
-    return {h: hx, s: sx, l: lx, a};
-}
-const MAX_BG_LIGHTNESS = 0.4;
-function modifyBgHSL({h, s, l, a}, pole) {
-    const isDark = l < 0.5;
-    const isBlue = h > 200 && h < 280;
-    const isNeutral = s < 0.12 || (l > 0.8 && isBlue);
-    if (isDark) {
-        const lx = scale(l, 0, 0.5, 0, MAX_BG_LIGHTNESS);
-        if (isNeutral) {
-            const hx = pole.h;
-            const sx = pole.s;
-            return {h: hx, s: sx, l: lx, a};
-        }
-        return {h, s, l: lx, a};
-    }
-    let lx = scale(l, 0.5, 1, MAX_BG_LIGHTNESS, pole.l);
-    if (isNeutral) {
-        const hx = pole.h;
-        const sx = pole.s;
-        return {h: hx, s: sx, l: lx, a};
-    }
-    let hx = h;
-    const isYellow = h > 60 && h < 180;
-    if (isYellow) {
-        const isCloserToGreen = h > 120;
-        if (isCloserToGreen) {
-            hx = scale(h, 120, 180, 135, 180);
-        } else {
-            hx = scale(h, 60, 120, 60, 105);
-        }
-    }
-    if (hx > 40 && hx < 80) {
-        lx *= 0.75;
-    }
-    return {h: hx, s, l: lx, a};
-}
-function _modifyBackgroundColor(rgb, theme) {
-    if (theme.mode === 0) {
-        return modifyLightSchemeColor(rgb, theme);
-    }
-    const pole = getBgPole(theme);
-    return modifyColorWithCache(rgb, {...theme, mode: 0}, modifyBgHSL, pole);
-}
-function modifyBackgroundColor(rgb, theme, shouldRegisterColorVariable = true) {
-    if (!shouldRegisterColorVariable) {
-        return _modifyBackgroundColor(rgb, theme);
-    }
-    return modifyAndRegisterColor(
-        "background",
-        rgb,
-        theme,
-        _modifyBackgroundColor
-    );
-}
-const MIN_FG_LIGHTNESS = 0.55;
-function modifyBlueFgHue(hue) {
-    return scale(hue, 205, 245, 205, 220);
-}
-function modifyFgHSL({h, s, l, a}, pole) {
-    const isLight = l > 0.5;
-    const isNeutral = l < 0.2 || s < 0.24;
-    const isBlue = !isNeutral && h > 205 && h < 245;
-    if (isLight) {
-        const lx = scale(l, 0.5, 1, MIN_FG_LIGHTNESS, pole.l);
-        if (isNeutral) {
-            const hx = pole.h;
-            const sx = pole.s;
-            return {h: hx, s: sx, l: lx, a};
-        }
-        let hx = h;
-        if (isBlue) {
-            hx = modifyBlueFgHue(h);
-        }
-        return {h: hx, s, l: lx, a};
-    }
-    if (isNeutral) {
-        const hx = pole.h;
-        const sx = pole.s;
-        const lx = scale(l, 0, 0.5, pole.l, MIN_FG_LIGHTNESS);
-        return {h: hx, s: sx, l: lx, a};
-    }
-    let hx = h;
-    let lx;
-    if (isBlue) {
-        hx = modifyBlueFgHue(h);
-        lx = scale(l, 0, 0.5, pole.l, Math.min(1, MIN_FG_LIGHTNESS + 0.05));
-    } else {
-        lx = scale(l, 0, 0.5, pole.l, MIN_FG_LIGHTNESS);
-    }
-    return {h: hx, s, l: lx, a};
-}
-function _modifyForegroundColor(rgb, theme) {
-    if (theme.mode === 0) {
-        return modifyLightSchemeColor(rgb, theme);
-    }
-    const pole = getFgPole(theme);
-    return modifyColorWithCache(rgb, {...theme, mode: 0}, modifyFgHSL, pole);
-}
-function modifyForegroundColor(rgb, theme, shouldRegisterColorVariable = true) {
-    if (!shouldRegisterColorVariable) {
-        return _modifyForegroundColor(rgb, theme);
-    }
-    return modifyAndRegisterColor("text", rgb, theme, _modifyForegroundColor);
-}
-function modifyBorderHSL({h, s, l, a}, poleFg, poleBg) {
-    const isDark = l < 0.5;
-    const isNeutral = l < 0.2 || s < 0.24;
-    let hx = h;
-    let sx = s;
-    if (isNeutral) {
-        if (isDark) {
-            hx = poleFg.h;
-            sx = poleFg.s;
-        } else {
-            hx = poleBg.h;
-            sx = poleBg.s;
-        }
-    }
-    const lx = scale(l, 0, 1, 0.5, 0.2);
-    return {h: hx, s: sx, l: lx, a};
-}
-function _modifyBorderColor(rgb, theme) {
-    if (theme.mode === 0) {
-        return modifyLightSchemeColor(rgb, theme);
-    }
-    const poleFg = getFgPole(theme);
-    const poleBg = getBgPole(theme);
-    return modifyColorWithCache(
-        rgb,
-        {...theme, mode: 0},
-        modifyBorderHSL,
-        poleFg,
-        poleBg
-    );
-}
-function modifyBorderColor(rgb, theme, shouldRegisterColorVariable = true) {
-    if (!shouldRegisterColorVariable) {
-        return _modifyBorderColor(rgb, theme);
-    }
-    return modifyAndRegisterColor("border", rgb, theme, _modifyBorderColor);
-}
-function modifyShadowColor(rgb, theme) {
-    return modifyBackgroundColor(rgb, theme);
-}
-function modifyGradientColor(rgb, theme) {
-    return modifyBackgroundColor(rgb, theme);
 }
 
 function getPriority(ruleStyle, property) {
@@ -3126,10 +3173,18 @@ const unparsableColors = new Set([
     "auto"
 ]);
 function getColorModifier(prop, value, rule) {
-    if (unparsableColors.has(value.toLowerCase())) {
+    if (
+        unparsableColors.has(value.toLowerCase()) &&
+        !(prop === "color" && value === "initial")
+    ) {
         return value;
     }
-    const rgb = parseColorWithCache(value);
+    let rgb = null;
+    if (prop === "color" && value === "initial") {
+        rgb = {r: 0, g: 0, b: 0, a: 1};
+    } else {
+        rgb = parseColorWithCache(value);
+    }
     if (!rgb) {
         logWarn("Couldn't parse color", value);
         return null;
@@ -3335,7 +3390,12 @@ function getBgImageModifier(value, rule, ignoreImageSelectors, isCancelled) {
                             awaitingForImageLoading.set(url, []);
                             imageDetails = await getImageDetails(url);
                             imageDetailsCache.set(url, imageDetails);
-                            writeImageDetailsCache(url, imageDetails);
+                            if (!url.startsWith("data:")) {
+                                const parsedURL = new URL(url);
+                                if (parsedURL.origin === location.origin) {
+                                    writeImageDetailsCache(url, imageDetails);
+                                }
+                            }
                             awaitingForImageLoading
                                 .get(url)
                                 .forEach((resolve) => resolve(imageDetails));
@@ -3531,7 +3591,7 @@ function getScrollbarColorModifier(value) {
         return null;
     }
     return (theme) =>
-        `${modifyForegroundColor(thumb, theme)} ${modifyBackgroundColor(thumb, theme)}`;
+        `${modifyForegroundColor(thumb, theme)} ${modifyBackgroundColor(track, theme)}`;
 }
 function getColorSchemeModifier() {
     return (theme) => (theme.mode === 0 ? "dark light" : "dark");
@@ -3569,6 +3629,9 @@ const VAR_TYPE_BG_COLOR = 1 << 0;
 const VAR_TYPE_TEXT_COLOR = 1 << 1;
 const VAR_TYPE_BORDER_COLOR = 1 << 2;
 const VAR_TYPE_BG_IMG = 1 << 3;
+const shouldSetDefaultColor =
+    !location.hostname.startsWith("www.ebay.") &&
+    !location.hostname.includes(".ebay.");
 class VariablesStore {
     constructor() {
         this.varTypes = new Map();
@@ -3818,10 +3881,12 @@ class VariablesStore {
             (isSimpleConstructedColor && property === "background")
         ) {
             return (theme) => {
-                const defaultFallback = tryModifyBgColor(
-                    isConstructedColor ? "255, 255, 255" : "#ffffff",
-                    theme
-                );
+                const defaultFallback = shouldSetDefaultColor
+                    ? tryModifyBgColor(
+                          isConstructedColor ? "255, 255, 255" : "#ffffff",
+                          theme
+                      )
+                    : "transparent";
                 return replaceCSSVariablesNames(
                     sourceValue,
                     (v) => wrapBgColorVariableName(v),
@@ -3881,10 +3946,7 @@ class VariablesStore {
                 };
                 const modified = modify();
                 if (unknownVars.size > 0) {
-                    const isFallbackResolved = modified.match(
-                        /^var\(.*?, (var\(--darkreader-bg--.*\))|(#[0-9A-Fa-f]+)|([a-z]+)|(rgba?\(.+\))|(hsla?\(.+\))\)$/
-                    );
-                    if (isFallbackResolved) {
+                    if (isFallbackResolved(modified)) {
                         return modified;
                     }
                     return new Promise((resolve) => {
@@ -4275,6 +4337,40 @@ function isConstructedColorVar(value) {
         value.match(/^(((\d{1,3})|(var\([\-_A-Za-z0-9]+\))),?\s*?){3}$/)
     );
 }
+function isFallbackResolved(modified) {
+    if (modified.startsWith("var(") && modified.endsWith(")")) {
+        const hasNestedBrackets = modified.endsWith("))");
+        const hasDoubleNestedBrackets = modified.endsWith(")))");
+        const lastOpenBracketIndex = hasNestedBrackets
+            ? modified.lastIndexOf("(")
+            : -1;
+        const firstOpenBracketIndex = hasDoubleNestedBrackets
+            ? modified.lastIndexOf("(", lastOpenBracketIndex - 1)
+            : lastOpenBracketIndex;
+        const commaIndex = modified.lastIndexOf(
+            ",",
+            hasNestedBrackets ? firstOpenBracketIndex : modified.length
+        );
+        if (commaIndex < 0 || modified[commaIndex + 1] !== " ") {
+            return false;
+        }
+        const fallback = modified.slice(commaIndex + 2, modified.length - 1);
+        if (hasNestedBrackets) {
+            return (
+                fallback.startsWith("rgb(") ||
+                fallback.startsWith("rgba(") ||
+                fallback.startsWith("hsl(") ||
+                fallback.startsWith("hsla(") ||
+                fallback.startsWith("var(--darkreader-bg--") ||
+                fallback.startsWith("var(--darkreader-background-") ||
+                (hasDoubleNestedBrackets &&
+                    fallback.includes("var(--darkreader-background-"))
+            );
+        }
+        return fallback.match(/^(#[0-9a-f]+)|([a-z]+)$/i);
+    }
+    return false;
+}
 const textColorProps = [
     "color",
     "caret-color",
@@ -4352,17 +4448,6 @@ function insertVarValues(source, varValues, fullStack = new Set()) {
     return replaced;
 }
 
-const themeCacheKeys = [
-    "mode",
-    "brightness",
-    "contrast",
-    "grayscale",
-    "sepia",
-    "darkSchemeBackgroundColor",
-    "darkSchemeTextColor",
-    "lightSchemeBackgroundColor",
-    "lightSchemeTextColor"
-];
 function getThemeKey(theme) {
     let resultKey = "";
     themeCacheKeys.forEach((key) => {
@@ -4377,6 +4462,9 @@ function createStyleSheetModifier() {
         let cssText = rule.cssText;
         if (isMediaRule(rule.parentRule)) {
             cssText = `${rule.parentRule.media.mediaText} { ${cssText} }`;
+        }
+        if (isLayerRule(rule.parentRule)) {
+            cssText = `${rule.parentRule.name} { ${cssText} }`;
         }
         return getHashCode(cssText);
     }
@@ -4479,6 +4567,12 @@ function createStyleSheetModifier() {
                 selector.includes("::view-transition-");
             if (emptyIsWhereSelector || viewTransitionSelector) {
                 selectorText = ".darkreader-unsupported-selector";
+            }
+            if (isChromium && selectorText.endsWith("::picker")) {
+                selectorText = selectorText.replaceAll(
+                    "::picker",
+                    "::picker(select)"
+                );
             }
             let ruleText = `${selectorText} {`;
             for (const dec of declarations) {
@@ -4673,6 +4767,12 @@ function createStyleSheetModifier() {
         function buildStyleSheet() {
             function createTarget(group, parent) {
                 const {rule} = group;
+                if (isStyleRule(rule)) {
+                    const {selectorText} = rule;
+                    const index = parent.cssRules.length;
+                    parent.insertRule(`${selectorText} {}`, index);
+                    return parent.cssRules[index];
+                }
                 if (isMediaRule(rule)) {
                     const {media} = rule;
                     const index = parent.cssRules.length;
@@ -4971,6 +5071,72 @@ function createAdoptedStyleSheetFallback() {
         cancelAsyncOperations = true;
     }
     return {render, destroy, commands};
+}
+
+const hostsBreakingOnStylePosition = [
+    "gogoprivate.com",
+    "gprivate.com",
+    "www.berlingske.dk",
+    "www.bloomberg.com",
+    "www.diffusioneshop.com",
+    "www.weekendavisen.dk",
+    "zhale.me"
+];
+const mode = hostsBreakingOnStylePosition.includes(location.hostname)
+    ? "away"
+    : "next";
+function getStyleInjectionMode() {
+    return mode;
+}
+const stylesWaitingForBody = new Set();
+let bodyObserver;
+function injectStyleAway(styleElement) {
+    if (!document.body) {
+        stylesWaitingForBody.add(styleElement);
+        if (!bodyObserver) {
+            bodyObserver = new MutationObserver(() => {
+                if (document.body) {
+                    bodyObserver.disconnect();
+                    bodyObserver = null;
+                    stylesWaitingForBody.forEach((el) => injectStyleAway(el));
+                    stylesWaitingForBody.clear();
+                }
+            });
+        }
+        return;
+    }
+    let container = document.body.querySelector(".darkreader-style-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.classList.add("darkreader");
+        container.classList.add("darkreader-style-container");
+        container.style.display = "none";
+        document.body.append(container);
+        containerObserver = new MutationObserver(() => {
+            if (container?.nextElementSibling != null) {
+                container
+                    .querySelectorAll(".darkreader--sync")
+                    .forEach((el) => {
+                        if (el.sheet.cssRules.length > 0) {
+                            let cssText = "";
+                            for (const rule of el.sheet.cssRules) {
+                                cssText += rule.cssText;
+                            }
+                            el.textContent = cssText;
+                        }
+                    });
+                document.body.append(container);
+            }
+        });
+        containerObserver.observe(document.body, {childList: true});
+    }
+    container.append(styleElement);
+}
+let containerObserver;
+function removeStyleContainer() {
+    bodyObserver?.disconnect();
+    containerObserver?.disconnect();
+    document.querySelector(".darkreader-style-container")?.remove();
 }
 
 const overrides = {
@@ -5274,12 +5440,49 @@ function shouldIgnoreInlineStyle(element, selectors) {
     }
     return false;
 }
+const LOOP_DETECTION_THRESHOLD = 1000;
+const MAX_LOOP_CYCLES = 10;
+const elementsLastChanges = new WeakMap();
+const elementsLoopCycles = new WeakMap();
+const SMALL_SVG_THRESHOLD = 32;
+const svgNodesRoots = new WeakMap();
+const svgRootSizeTestResults = new WeakMap();
+function getSVGElementRoot(svgElement) {
+    if (!svgElement) {
+        return null;
+    }
+    if (svgNodesRoots.has(svgElement)) {
+        return svgNodesRoots.get(svgElement);
+    }
+    if (svgElement instanceof SVGSVGElement) {
+        return svgElement;
+    }
+    const parent = svgElement.parentNode;
+    const root = getSVGElementRoot(parent);
+    svgNodesRoots.set(svgElement, root);
+    return root;
+}
 function overrideInlineStyle(
     element,
     theme,
     ignoreInlineSelectors,
     ignoreImageSelectors
 ) {
+    if (elementsLastChanges.has(element)) {
+        if (
+            Date.now() - elementsLastChanges.get(element) <
+            LOOP_DETECTION_THRESHOLD
+        ) {
+            const cycles = elementsLoopCycles.get(element) ?? 0;
+            elementsLoopCycles.set(element, cycles + 1);
+        }
+        if ((elementsLoopCycles.get(element) ?? 0) >= MAX_LOOP_CYCLES) {
+            return;
+        }
+    }
+    if (element.parentElement?.dataset.nodeViewContent) {
+        return;
+    }
     const cacheKey = getInlineStyleCacheKey(element, theme);
     if (cacheKey === inlineStyleCache.get(element)) {
         return;
@@ -5430,14 +5633,34 @@ function overrideInlineStyle(
     }
     if (isSVGElement) {
         if (element.hasAttribute("fill")) {
-            const SMALL_SVG_LIMIT = 32;
             const value = element.getAttribute("fill");
             if (value !== "none") {
                 if (!(element instanceof SVGTextElement)) {
                     const handleSVGElement = () => {
-                        const {width, height} = element.getBoundingClientRect();
-                        const isBg =
-                            width > SMALL_SVG_LIMIT || height > SMALL_SVG_LIMIT;
+                        let isSVGSmall = false;
+                        const root = getSVGElementRoot(element);
+                        if (!root) {
+                            return;
+                        }
+                        if (svgRootSizeTestResults.has(root)) {
+                            isSVGSmall = svgRootSizeTestResults.get(root);
+                        } else {
+                            const svgBounds = root.getBoundingClientRect();
+                            isSVGSmall =
+                                svgBounds.width * svgBounds.height <=
+                                Math.pow(SMALL_SVG_THRESHOLD, 2);
+                            svgRootSizeTestResults.set(root, isSVGSmall);
+                        }
+                        let isBg;
+                        if (isSVGSmall) {
+                            isBg = false;
+                        } else {
+                            const {width, height} =
+                                element.getBoundingClientRect();
+                            isBg =
+                                width > SMALL_SVG_THRESHOLD ||
+                                height > SMALL_SVG_THRESHOLD;
+                        }
                         setCustomProp(
                             "fill",
                             isBg ? "background-color" : "color",
@@ -5522,6 +5745,7 @@ function overrideInlineStyle(
         element.removeAttribute(overrides[cssProp].dataAttr);
     });
     inlineStyleCache.set(element, getInlineStyleCacheKey(element, theme));
+    elementsLastChanges.set(element, Date.now());
 }
 
 const metaThemeColorName = "theme-color";
@@ -5707,7 +5931,7 @@ function shouldManageStyle(element) {
                     : true) &&
                 !isFontsGoogleApiStyle(element))) &&
         !element.classList.contains("darkreader") &&
-        element.media.toLowerCase() !== "print" &&
+        !ignoredMedia.includes(element.media.toLowerCase()) &&
         !element.classList.contains("stylus")
     );
 }
@@ -5731,27 +5955,30 @@ function getManageableStyles(node, results = [], deep = true) {
     return results;
 }
 const syncStyleSet = new WeakSet();
-const corsStyleSet = new WeakSet();
+const corsCopies = new WeakMap();
+const corsCopiesTextLengths = new WeakMap();
 let loadingLinkCounter = 0;
 const rejectorsForLoadingLinks = new Map();
 function cleanLoadingLinks() {
     rejectorsForLoadingLinks.clear();
 }
 function manageStyle(element, {update, loadingStart, loadingEnd}) {
-    const prevStyles = [];
-    let next = element;
-    while ((next = next.nextElementSibling) && next.matches(".darkreader")) {
-        prevStyles.push(next);
+    const inMode = getStyleInjectionMode();
+    let syncStyle = null;
+    if (inMode === "next") {
+        const prevStyles = [];
+        let next = element;
+        while (
+            (next = next.nextElementSibling) &&
+            next.matches(".darkreader")
+        ) {
+            prevStyles.push(next);
+        }
+        syncStyle =
+            prevStyles.find(
+                (el) => el.matches(".darkreader--sync") && !syncStyleSet.has(el)
+            ) || null;
     }
-    let corsCopy =
-        prevStyles.find(
-            (el) => el.matches(".darkreader--cors") && !corsStyleSet.has(el)
-        ) || null;
-    let syncStyle =
-        prevStyles.find(
-            (el) => el.matches(".darkreader--sync") && !syncStyleSet.has(el)
-        ) || null;
-    let corsCopyPositionWatcher = null;
     let syncStylePositionWatcher = null;
     let cancelAsyncOperations = false;
     let isOverrideEmpty = true;
@@ -5809,8 +6036,8 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
         return result;
     }
     function getRulesSync() {
-        if (corsCopy) {
-            return corsCopy.sheet.cssRules;
+        if (corsCopies.has(element)) {
+            return corsCopies.get(element).cssRules;
         }
         if (containsCSSImport()) {
             return null;
@@ -5830,18 +6057,12 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
         return cssRules;
     }
     function insertStyle() {
-        if (corsCopy) {
-            if (element.nextSibling !== corsCopy) {
-                element.parentNode.insertBefore(corsCopy, element.nextSibling);
+        if (inMode === "next") {
+            if (element.nextSibling !== syncStyle) {
+                element.parentNode.insertBefore(syncStyle, element.nextSibling);
             }
-            if (corsCopy.nextSibling !== syncStyle) {
-                element.parentNode.insertBefore(
-                    syncStyle,
-                    corsCopy.nextSibling
-                );
-            }
-        } else if (element.nextSibling !== syncStyle) {
-            element.parentNode.insertBefore(syncStyle, element.nextSibling);
+        } else if (inMode === "away") {
+            injectStyleAway(syncStyle);
         }
     }
     function createSyncStyle() {
@@ -5899,7 +6120,12 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
                     return cssRules;
                 }
             }
-            cssText = await loadText(element.href);
+            try {
+                cssText = await loadText(element.href);
+            } catch (err) {
+                logWarn(err);
+                cssText = "";
+            }
             cssBasePath = getCSSBaseBath(element.href);
             if (cancelAsyncOperations) {
                 return null;
@@ -5911,8 +6137,8 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
             return null;
         }
         await createOrUpdateCORSCopy(cssText, cssBasePath);
-        if (corsCopy) {
-            return corsCopy.sheet.cssRules;
+        if (corsCopies.has(element)) {
+            return corsCopies.get(element).cssRules;
         }
         return null;
     }
@@ -5923,23 +6149,21 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
                     cssText,
                     cssBasePath
                 );
-                if (corsCopy) {
+                if (corsCopies.has(element)) {
                     if (
-                        (corsCopy.textContent?.length ?? 0) < fullCSSText.length
+                        (corsCopiesTextLengths.get(element) ?? 0) <
+                        fullCSSText.length
                     ) {
-                        corsCopy.textContent = fullCSSText;
+                        corsCopies.get(element).replaceSync(fullCSSText);
+                        corsCopiesTextLengths.set(element, fullCSSText.length);
                     }
                 } else {
-                    corsCopy = createCORSCopy(element, fullCSSText);
+                    const corsCopy = new CSSStyleSheet();
+                    corsCopy.replaceSync(fullCSSText);
+                    corsCopies.set(element, corsCopy);
                 }
             } catch (err) {
                 logWarn(err);
-            }
-            if (corsCopy) {
-                corsCopyPositionWatcher = watchForNodePosition(
-                    corsCopy,
-                    "prev-sibling"
-                );
             }
         }
     }
@@ -6002,7 +6226,7 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
             removeCSSRulesFromSheet(sheet);
             if (syncStylePositionWatcher) {
                 syncStylePositionWatcher.run();
-            } else {
+            } else if (inMode === "next") {
                 syncStylePositionWatcher = watchForNodePosition(
                     syncStyle,
                     "prev-sibling",
@@ -6025,7 +6249,8 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
                 force,
                 isAsyncCancelled
             });
-            isOverrideEmpty = syncStyle.sheet.cssRules.length === 0;
+            isOverrideEmpty =
+                !syncStyle.sheet || syncStyle.sheet.cssRules.length === 0;
             if (sheetModifier.shouldRebuildStyle()) {
                 addReadyStateCompleteListener(() => update());
             }
@@ -6062,13 +6287,12 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
     function pause() {
         observer.disconnect();
         cancelAsyncOperations = true;
-        corsCopyPositionWatcher && corsCopyPositionWatcher.stop();
         syncStylePositionWatcher && syncStylePositionWatcher.stop();
         sheetChangeWatcher.stop();
     }
     function destroy() {
         pause();
-        removeNode(corsCopy);
+        corsCopies.delete(element);
         removeNode(syncStyle);
         loadingEnd();
         if (rejectorsForLoadingLinks.has(loadingLinkId)) {
@@ -6096,7 +6320,6 @@ function manageStyle(element, {update, loadingStart, loadingEnd}) {
         }
         logWarn("Restore style", syncStyle, element);
         insertStyle();
-        corsCopyPositionWatcher && corsCopyPositionWatcher.skip();
         syncStylePositionWatcher && syncStylePositionWatcher.skip();
         if (!isOverrideEmpty) {
             forceRenderStyle = true;
@@ -6167,7 +6390,9 @@ async function loadText(url) {
             origin: location.origin
         });
     }
-    writeCSSFetchCache(url, text);
+    if (parsedURL.origin === location.origin) {
+        writeCSSFetchCache(url, text);
+    }
     return text;
 }
 async function replaceCSSImports(cssText, basePath, cache = new Map()) {
@@ -6222,20 +6447,6 @@ async function replaceCSSImports(cssText, basePath, cache = new Map()) {
     }
     cssText = cssText.trim();
     return cssText;
-}
-function createCORSCopy(srcElement, cssText) {
-    if (!cssText) {
-        return null;
-    }
-    const cors = document.createElement("style");
-    cors.classList.add("darkreader");
-    cors.classList.add("darkreader--cors");
-    cors.media = "screen";
-    cors.textContent = cssText;
-    srcElement.parentNode.insertBefore(cors, srcElement.nextSibling);
-    cors.sheet.disabled = true;
-    corsStyleSet.add(cors);
-    return cors;
 }
 
 function injectProxy(enableStyleSheetsProxy, enableCustomElementRegistryProxy) {
@@ -7007,20 +7218,24 @@ let fixes = null;
 let isIFrame$1 = null;
 let ignoredImageAnalysisSelectors = [];
 let ignoredInlineSelectors = [];
-const staticStyleMap = new Map();
+let staticStyleMap = new WeakMap();
 function createOrUpdateStyle(className, root = document.head || document) {
     let element = root.querySelector(`.${className}`);
+    if (!staticStyleMap.has(root)) {
+        staticStyleMap.set(root, new Map());
+    }
+    const classMap = staticStyleMap.get(root);
     if (element) {
-        staticStyleMap.set(className, element);
-    } else if (staticStyleMap.has(className)) {
-        element = staticStyleMap.get(className);
+        classMap.set(className, element);
+    } else if (classMap.has(className)) {
+        element = classMap.get(className);
     } else {
         element = document.createElement("style");
         element.classList.add("darkreader");
         element.classList.add(className);
         element.media = "screen";
         element.textContent = "";
-        staticStyleMap.set(className, element);
+        classMap.set(className, element);
     }
     return element;
 }
@@ -7045,27 +7260,36 @@ function stopStylePositionWatchers() {
     forEach(nodePositionWatchers.values(), (watcher) => watcher.stop());
     nodePositionWatchers.clear();
 }
+function injectStaticStyle(style, prevNode, watchAlias, callback) {
+    const mode = getStyleInjectionMode();
+    if (mode === "next") {
+        document.head.insertBefore(
+            style,
+            prevNode ? prevNode.nextSibling : document.head.firstChild
+        );
+        setupNodePositionWatcher(style, watchAlias, callback);
+    } else if (mode === "away") {
+        injectStyleAway(style);
+    }
+}
 function createStaticStyleOverrides() {
     const fallbackStyle = createOrUpdateStyle("darkreader--fallback", document);
     fallbackStyle.textContent = getModifiedFallbackStyle(theme, {strict: true});
-    document.head.insertBefore(fallbackStyle, document.head.firstChild);
-    setupNodePositionWatcher(fallbackStyle, "fallback");
+    injectStaticStyle(fallbackStyle, null, "fallback");
     const userAgentStyle = createOrUpdateStyle("darkreader--user-agent");
     userAgentStyle.textContent = getModifiedUserAgentStyle(
         theme,
         isIFrame$1,
         theme.styleSystemControls
     );
-    document.head.insertBefore(userAgentStyle, fallbackStyle.nextSibling);
-    setupNodePositionWatcher(userAgentStyle, "user-agent");
+    injectStaticStyle(userAgentStyle, fallbackStyle, "user-agent");
     const textStyle = createOrUpdateStyle("darkreader--text");
     if (theme.useFont || theme.textStroke > 0) {
         textStyle.textContent = createTextStyle(theme);
     } else {
         textStyle.textContent = "";
     }
-    document.head.insertBefore(textStyle, fallbackStyle.nextSibling);
-    setupNodePositionWatcher(textStyle, "text");
+    injectStaticStyle(textStyle, userAgentStyle, "text");
     const invertStyle = createOrUpdateStyle("darkreader--invert");
     if (fixes && Array.isArray(fixes.invert) && fixes.invert.length > 0) {
         invertStyle.textContent = [
@@ -7082,17 +7306,10 @@ function createStaticStyleOverrides() {
     } else {
         invertStyle.textContent = "";
     }
-    document.head.insertBefore(invertStyle, textStyle.nextSibling);
-    setupNodePositionWatcher(invertStyle, "invert");
+    injectStaticStyle(invertStyle, textStyle, "invert");
     const inlineStyle = createOrUpdateStyle("darkreader--inline");
     inlineStyle.textContent = getInlineOverrideStyle();
-    document.head.insertBefore(inlineStyle, invertStyle.nextSibling);
-    setupNodePositionWatcher(inlineStyle, "inline");
-    const overrideStyle = createOrUpdateStyle("darkreader--override");
-    overrideStyle.textContent =
-        fixes && fixes.css ? replaceCSSTemplates(fixes.css) : "";
-    document.head.appendChild(overrideStyle);
-    setupNodePositionWatcher(overrideStyle, "override");
+    injectStaticStyle(inlineStyle, invertStyle, "inline");
     const variableStyle = createOrUpdateStyle("darkreader--variables");
     const selectionColors = theme?.selectionColor
         ? getSelectionColor(theme)
@@ -7113,13 +7330,12 @@ function createStaticStyleOverrides() {
         `   --darkreader-selection-text: ${selectionColors?.foregroundColorSelection ?? "initial"};`,
         `}`
     ].join("\n");
-    document.head.insertBefore(variableStyle, inlineStyle.nextSibling);
-    setupNodePositionWatcher(variableStyle, "variables", () =>
+    injectStaticStyle(variableStyle, inlineStyle, "variables", () =>
         registerVariablesSheet(variableStyle.sheet)
     );
     registerVariablesSheet(variableStyle.sheet);
     const rootVarsStyle = createOrUpdateStyle("darkreader--root-vars");
-    document.head.insertBefore(rootVarsStyle, variableStyle.nextSibling);
+    injectStaticStyle(rootVarsStyle, variableStyle, "root-vars");
     const enableStyleSheetsProxy = !(fixes && fixes.disableStyleSheetsProxy);
     const enableCustomElementRegistryProxy = !(
         fixes && fixes.disableCustomElementRegistryProxy
@@ -7133,6 +7349,10 @@ function createStaticStyleOverrides() {
         document.head.insertBefore(proxyScript, rootVarsStyle.nextSibling);
         proxyScript.remove();
     }
+    const overrideStyle = createOrUpdateStyle("darkreader--override");
+    overrideStyle.textContent =
+        fixes && fixes.css ? replaceCSSTemplates(fixes.css) : "";
+    injectStaticStyle(overrideStyle, document.head.lastChild, "override");
 }
 const shadowRootsWithOverrides = new Set();
 function createShadowStaticStyleOverridesInner(root) {
@@ -7208,7 +7428,8 @@ function replaceCSSTemplates($cssText) {
 }
 function cleanFallbackStyle() {
     const fallback =
-        staticStyleMap.get("darkreader--fallback") ||
+        staticStyleMap.get(document.head)?.get("darkreader--fallback") ||
+        staticStyleMap.get(document)?.get("darkreader--fallback") ||
         document.querySelector(".darkreader--fallback");
     if (fallback) {
         fallback.textContent = "";
@@ -7737,7 +7958,7 @@ function removeDynamicTheme() {
         selectors.forEach((selector) =>
             removeNode(document.head.querySelector(selector))
         );
-        staticStyleMap.clear();
+        staticStyleMap = new WeakMap();
         removeProxy();
     }
     shadowRootsWithOverrides.forEach((root) => {
@@ -7749,6 +7970,7 @@ function removeDynamicTheme() {
     loadingStyles.clear();
     cleanLoadingLinks();
     forEach(document.querySelectorAll(".darkreader"), removeNode);
+    removeStyleContainer();
     adoptedStyleManagers.forEach((manager) => manager.destroy());
     adoptedStyleManagers.splice(0);
     adoptedStyleFallbacks.forEach((fallback) => fallback.destroy());

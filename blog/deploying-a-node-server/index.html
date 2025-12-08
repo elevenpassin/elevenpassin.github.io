@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alice Kile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="/styles/base.css" rel="stylesheet">
+    <style>/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0, 0, 0, .2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none;
+	/* override del, ins, mark defaults */
+	color: inherit;
+	/* override del, ins, mark defaults */
+}
+.post-metadata {
+  list-style: none;
+  padding: 0;
+}
+
+.links-nextprev {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  list-style: none;
+  padding: 0;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.page-header li {
+  margin-right: 10px;
+  align-self: flex-end;
+}
+
+.page-header li#nav-item-home {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}</style>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-E1E07YLH8W"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-E1E07YLH8W");
+    </script>
+  </head>
+  <body>
+    
+
+
+<header class="page-header">
+  <nav>
+    <ol>
+      
+        <li id="nav-item-home"><a href="/" alt="Go to Homepage">Alice Kile</a></li>
+      
+      <li><a href="https://github.com/elevenpassin/">code</a></li>
+      <li><a href="/blog">writings</a></li>
+      <li><a href="/wiki">wiki</a></li>
+      <li><a href="/links">links</a></li>
+      <li><a href="https://forms.gle/XHdJVvt21dXLYVZi8">contact</a></li>
+      <li><a href="/feed/feed.xml">rss</a></li>
+    </ol>
+  </nav>
+</header>
+
+
+
+
+
+<section class="page-section">
+<h1 id="deploying-a-node-server-on-a-bare-metal-vps">Deploying a Node Server on a bare metal VPS</h1>
+<ul class="post-metadata">
+  <li>
+    <b>Published Date:</b> <time datetime="2025-12-08">08 December 2025</time>
+  </li>
+  <li>
+    <b>Tags: </b>
+      <a href="/tags/node-js/" class="post-tag">node.js</a>,
+      <a href="/tags/server/" class="post-tag">server</a>,
+      <a href="/tags/vps/" class="post-tag">vps</a>,
+      <a href="/tags/cloud/" class="post-tag">cloud</a>,
+      <a href="/tags/production/" class="post-tag">production</a>,
+      <a href="/tags/linux/" class="post-tag">linux</a>,
+      <a href="/tags/hetzner/" class="post-tag">hetzner</a>
+  </li>
+</ul>
+<p>For a personal project I was working on, I wanted to deploy a nodejs server directly on the VPS without using any of the container solutions as it was a fairly basic project. I came up with a deployment guide for that project, which I'm now publishing to the public.</p>
+<h2 id="table-of-contents">Table Of Contents</h2>
+<ul>
+<li><a href="#table-of-contents">Table Of Contents</a></li>
+<li><a href="#deployment">Deployment</a>
+<ul>
+<li><a href="#prepare-the-production-server">Prepare the production server</a>
+<ul>
+<li><a href="#the-root-user">The root user</a></li>
+<li><a href="#creating-a-user-account-for-your-application">Creating a user account for your application</a></li>
+<li><a href="#setting-up-a-firewall">Setting up a firewall</a></li>
+<li><a href="#setting-up-ssh-login-for-the-application-user">Setting up SSH login for the application user</a></li>
+</ul>
+</li>
+<li><a href="#setting-up-nodejs">Setting up NodeJS</a>
+<ul>
+<li><a href="#install-curl">Install curl</a></li>
+<li><a href="#download-the-setup-script">Download the setup script</a></li>
+<li><a href="#run-the-setup-script-with-sudo">Run the setup script with sudo</a></li>
+<li><a href="#install-nodejs">Install Node.js</a></li>
+<li><a href="#verify-that-node-is-installed">Verify that node is installed</a></li>
+<li><a href="#setting-up-npm--yarn">Setting up NPM / Yarn</a></li>
+<li><a href="#installing-build-essential-package">Installing build-essential package</a></li>
+<li><a href="#setting-up-yarn-optional">Setting up Yarn (optional)</a></li>
+</ul>
+</li>
+<li><a href="#copying-over-the-server-code">Copying over the server code</a></li>
+<li><a href="#configuring-the-server">Configuring the server</a>
+<ul>
+<li><a href="#env-variables">Env Variables</a></li>
+</ul>
+</li>
+<li><a href="#setting-up-pm2">Setting up PM2</a></li>
+</ul>
+</li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h2 id="deployment">Deployment</h2>
+<h3 id="prepare-the-production-server">Prepare the production server</h3>
+<p>Use your preferred cloud platform to create a linux server with specs based on your needs. To access the VPS via SSH, refer to your cloud platform's docs on how to setup an SSH key on a newly created VPS.
+Once a linux server has been created (I am deploy on a Debian server, hosted at Hetzner), we can then
+prepare the server for production usage.</p>
+<h4 id="the-root-user">The root user</h4>
+<p>Generally speaking, you should get access to the root user when you create a server, which should allow you to ssh into the server using the command below:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">$ <span class="token function">ssh</span> root@your_server_ip_addr</code></pre>
+<p>Once you have logged in, immediately the first thing to do is to set a password to the root account.</p>
+<p>Use the command below to change password:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ <span class="token function">passwd</span></code></pre>
+<h4 id="creating-a-user-account-for-your-application">Creating a user account for your application</h4>
+<p>Since working with root directly is generally discouraged for various security and safety reasons, we'll create a seperate user account with limited permissions who's job is to run the server.</p>
+<p>When following the next steps, replace all instances of <code>server_username</code> with your own username. To be more clear, I've included the user performing each action at the beginning of each command.</p>
+<p>Use the command below to create a new user account:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ adduser server_username</code></pre>
+<p>We can now provide our new user with admin privileges so we don't have to switch to root user every time we need to do an administrative task. This will allow the new user to do administrative tasks by prepending <code>sudo</code> to their commands.</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ <span class="token function">usermod</span> <span class="token parameter variable">-aG</span> <span class="token function">sudo</span> server_username</code></pre>
+<h4 id="setting-up-a-firewall">Setting up a firewall</h4>
+<p>We can make use of <code>ufw</code> firewall to limit the extent of ports etc that general public can access. To do this, first make sure to install <code>ufw</code> on the server:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ <span class="token function">apt</span> <span class="token function">install</span> ufw</code></pre>
+<p>Now that we have <code>ufw</code> installed, it's time to configure it. You can try to run the following command to see if we can already start configuring various applications' access through firewall:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ ufw app list</code></pre>
+<p>We need to make sure that the firewall allows SSH connections so that we can log back in next time, we can allow these connections by typing:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ ufw allow OpenSSH</code></pre>
+<p>and then we enable the firewall itself:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ ufw <span class="token builtin class-name">enable</span></code></pre>
+<p>You can check the status of the firewall by typing in:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ ufw status</code></pre>
+<h4 id="setting-up-ssh-login-for-the-application-user">Setting up SSH login for the application user</h4>
+<p>For our application user that we created a few steps back, if you try to ssh using the command below:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">$ <span class="token function">ssh</span> server_username@your_server_addr</code></pre>
+<p>You will be prompted to enter the user password to login, but since we already have our public SSH key on the server configured for the <code>root</code> user, we can just copy over the root user's <code>.ssh/authorized_keys</code> folder into our server user's home folder.</p>
+<p>We can do this using rsync:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">root $ <span class="token function">rsync</span> <span class="token parameter variable">--archive</span> <span class="token parameter variable">--chown</span><span class="token operator">=</span>server_username:server_username ~/.ssh /home/server_username/.ssh</code></pre>
+<p>Now you should be able to simply SSH into your server without typing in your password.</p>
+<h3 id="setting-up-nodejs">Setting up NodeJS</h3>
+<p>Now, let's use our newly created application user to setup NodeJS.
+For this, I'm using <a href="https://github.com/nodesource/distributions">NodeSource</a> as they provide binary distributions for most major versions of NodeJS.</p>
+<p>Simply follow the installation instructions from their github page. As I am using a debian server, I'll be using the instructions for Debian:</p>
+<h4 id="install-curl">Install curl</h4>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> <span class="token function">curl</span></code></pre>
+<h4 id="download-the-setup-script">Download the setup script</h4>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">curl</span> <span class="token parameter variable">-fsSL</span> https://deb.nodesource.com/setup_22.x <span class="token parameter variable">-o</span> nodesource_setup.sh</code></pre>
+<h4 id="run-the-setup-script-with-sudo">Run the setup script with sudo</h4>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> <span class="token parameter variable">-E</span> <span class="token function">bash</span> nodesource_setup.sh</code></pre>
+<h4 id="install-node-js">Install Node.js</h4>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> nodejs</code></pre>
+<h4 id="verify-that-node-is-installed">Verify that node is installed</h4>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">node</span> <span class="token parameter variable">-v</span></code></pre>
+<h4 id="setting-up-npm-yarn">Setting up NPM / Yarn</h4>
+<p>Generally speaking, NPM should come part of the Node.js package, so if you have nodejs installed, you should be able to also use Npm, you can verify that npm is installed by typing:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">npm</span> <span class="token parameter variable">-v</span></code></pre>
+<h4 id="installing-build-essential-package">Installing build-essential package</h4>
+<p>For some NPM packages, we often need to locally compile the native binaries from source, for example in the case of node-gyp. To make it possible, we can install the <code>build-essential</code> package as it will install various tools like <code>make</code>, <code>gcc</code> etc on our system.</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> build-essential</code></pre>
+<h4 id="setting-up-yarn-optional">Setting up Yarn (optional)</h4>
+<p>My project uses yarn for it's package management, so let's install yarn:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">npm</span> i <span class="token parameter variable">-g</span> yarn@latest     <span class="token comment"># installation</span>
+server_username $ <span class="token function">yarn</span> <span class="token parameter variable">-v</span>                  <span class="token comment"># verification</span></code></pre>
+<h3 id="copying-over-the-server-code">Copying over the server code</h3>
+<p>You can just copy over the server code from your local machine to the server by using <code>scp</code>. But before you do that, make sure that you make a production copy of your server folder and then remove any unwanted folders like <code>.git</code>, <code>node_modules</code>, <code>.yarn</code> etc.</p>
+<p>Run this on your local machine to copy over the server code:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">$ <span class="token function">scp</span> <span class="token parameter variable">-rp</span> ./prod_server_folder server_username@your_server_addr:/home/server_username/app</code></pre>
+<p>You might have to rename or move the server folder to an appropriate directory on the server once you have uploaded everything. I uploaded my local prod version of the server code (in <code>prod_server_folder</code>) to my server at <code>/home/server_username/app</code>.</p>
+<h3 id="configuring-the-server">Configuring the server</h3>
+<p>At this point, you should just be able to use <code>node path/to/server.js</code> or equivalent to run the server. Please note that the server will not be available to public yet as we currently only allow SSH connections through the <code>ufw</code> firewall.</p>
+<p>Before we configure the firewall, we should first setup the server itself.</p>
+<h4 id="env-variables">Env Variables</h4>
+<p>Make sure to update the env variables file in the server folder, specifically configure the server to run on port <code>80</code> (since we're only doing http for now) as well as any other env variables like the database URL etc.</p>
+<p>At the end of this step you should be able to already start a production server, albiet without any daemon in place to handle automatic restarts etc.</p>
+<h3 id="setting-up-pm2">Setting up PM2</h3>
+<p>PM2 is going to be our daemon controller, it will setup a daemon for our server so that any time our server has to restart, the daemon will make sure that the server is also restarted and up and running again.</p>
+<p>To install PM2, just run:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> <span class="token function">npm</span> <span class="token function">install</span> pm2@latest <span class="token parameter variable">-g</span></code></pre>
+<p>Now you can instruct PM2 to start the server</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> pm2 start path/to/server.js</code></pre>
+<p>This will add your server to PM2's process list. Applications running on this process list will be automatically restarted if the app crashes or is killed. We can also take one additional step to make sure that the app is run on system startup:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> pm2 startup systemd</code></pre>
+<p>This will ask you to run a specific command with sudo permissions in your terminal, once that is done, a <a href="https://wiki.archlinux.org/title/Systemd#Using_units">systemd unit</a> is created, that runs a pm2 process on boot for <code>server_username</code> user. This pm2 instance in turn will run the server itself.</p>
+<p>Now that the server is up and running you should do one last thing before accessing the server and that is to allow http connections on port 80.</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> ufw allow <span class="token number">80</span> <span class="token comment"># alternative: sudo ufw allow http</span></code></pre>
+<p>You can verify that access to port 80 is allowed by typing in:</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh">server_username $ <span class="token function">sudo</span> ufw status</code></pre>
+<p>Congratulations! You have accessfully setup a nodejs server for production!</p>
+<p>You can now visit <code>http://your_server_addr</code> to checkout your newly setup server!</p>
+<h2 id="resources">Resources</h2>
+<p>Now that we've got the basics sorted, there's still a lot more we can do such as setting up Let's Encrypt and configuring Database access etc. I have some resources below that I've used to write this blog, feel free to take a look at them to go more indepth into some of the more advanced concepts.</p>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/deployment">Express Tutorial Part 7: Deploying to production</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu">How to Set Up a Firewall with UFW on Ubuntu</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/understanding-nginx-http-proxying-load-balancing-buffering-and-caching">Understanding Nginx HTTP Proxying, Load Balancing, Buffering, and Caching</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-20-04">How To Set Up a Node.js Application for Production on Ubuntu</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04">How To Configure Remote Access for MongoDB on Ubuntu 20.04</a></li>
+<li><a href="https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/">https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/</a></li>
+</ul>
+
+    <ul class="links-nextprev">
+        <li class="links-nextprev-prev">← Previous<br>
+            <a href="/blog/helloworld/">Hello World</a>
+          </li>
+        
+        </ul>
+</section>
+
+
+    <script type="module" async="" src="/scripts/darkmode.js"></script>
+  </body>
+</html>

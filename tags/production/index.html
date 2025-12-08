@@ -9,7 +9,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="/styles/base.css" rel="stylesheet">
-    <style>.page-header {
+    <style>.postlist-item {
+  margin-bottom: 16px;
+}
+
+.postlist-item a,
+.postlist-item time {
+  display: block;
+}
+
+.postlist-item a {
+  margin-bottom: 10px;
+}
+.postlist { counter-reset: start-from
+  2 }
+.page-header {
   margin-bottom: 20px;
 }
 
@@ -62,47 +76,27 @@
 </header>
 
 
-<h1 id="tags">Tags</h1>
+<h1 id="tagged-production">Tagged “production”</h1>
 
-<ul>
 
-	
-	<li><a href="/tags/node-js/" class="post-tag">node.js</a></li>
 
-	
-	<li><a href="/tags/server/" class="post-tag">server</a></li>
+<section class="page-section">
+  <ol reversed="" class="postlist">
+    
+      <li class="postlist-item">
+        <a href="/blog/deploying-a-node-server/" class="postlist-link">
+          
+            Deploying a Node Server on a bare metal VPS
+          
+        </a>
+        <time class="postlist-date" datetime="2025-12-08">December 2025</time>
+      </li>
+    
+  </ol>
+</section>
 
-	
-	<li><a href="/tags/vps/" class="post-tag">vps</a></li>
 
-	
-	<li><a href="/tags/cloud/" class="post-tag">cloud</a></li>
-
-	
-	<li><a href="/tags/production/" class="post-tag">production</a></li>
-
-	
-	<li><a href="/tags/linux/" class="post-tag">linux</a></li>
-
-	
-	<li><a href="/tags/hetzner/" class="post-tag">hetzner</a></li>
-
-	
-	<li><a href="/tags/second/" class="post-tag">second</a></li>
-
-	
-	<li><a href="/tags/another-tag/" class="post-tag">another tag</a></li>
-
-	
-	<li><a href="/tags/number-2/" class="post-tag">number 2</a></li>
-
-	
-	<li><a href="/tags/second-tag/" class="post-tag">second tag</a></li>
-
-	
-	<li><a href="/tags/posts-with-two-tags/" class="post-tag">posts with two tags</a></li>
-
-</ul>
+<p>See <a href="/tags/">all tags</a>.</p>
 
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>

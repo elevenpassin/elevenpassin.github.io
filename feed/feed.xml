@@ -5,11 +5,151 @@
   <subtitle>Alice&#39;s web log</subtitle>
   <link href="https://alicekile.dev/feed/feed.xml" rel="self" />
   <link href="https://alicekile.dev/" />
-  <updated>2024-11-17T00:00:00Z</updated>
+  <updated>2025-12-08T00:00:00Z</updated>
   <id>https://alicekile.dev/</id>
   <author>
     <name>Alice Kile</name>
   </author>
+  <entry>
+    <title>Deploying a Node Server on a bare metal VPS</title>
+    <link href="https://alicekile.dev/blog/deploying-a-node-server/" />
+    <updated>2025-12-08T00:00:00Z</updated>
+    <id>https://alicekile.dev/blog/deploying-a-node-server/</id>
+    <content type="html">&lt;p&gt;For a personal project I was working on, I wanted to deploy a nodejs server directly on the VPS without using any of the container solutions as it was a fairly basic project. I came up with a deployment guide for that project, which I&#39;m now publishing to the public.&lt;/p&gt;
+&lt;h2 id=&quot;table-of-contents&quot;&gt;Table Of Contents&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#table-of-contents&quot;&gt;Table Of Contents&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#deployment&quot;&gt;Deployment&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#prepare-the-production-server&quot;&gt;Prepare the production server&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#the-root-user&quot;&gt;The root user&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#creating-a-user-account-for-your-application&quot;&gt;Creating a user account for your application&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-a-firewall&quot;&gt;Setting up a firewall&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-ssh-login-for-the-application-user&quot;&gt;Setting up SSH login for the application user&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-nodejs&quot;&gt;Setting up NodeJS&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#install-curl&quot;&gt;Install curl&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#download-the-setup-script&quot;&gt;Download the setup script&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#run-the-setup-script-with-sudo&quot;&gt;Run the setup script with sudo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#install-nodejs&quot;&gt;Install Node.js&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#verify-that-node-is-installed&quot;&gt;Verify that node is installed&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-npm--yarn&quot;&gt;Setting up NPM / Yarn&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#installing-build-essential-package&quot;&gt;Installing build-essential package&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-yarn-optional&quot;&gt;Setting up Yarn (optional)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#copying-over-the-server-code&quot;&gt;Copying over the server code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#configuring-the-server&quot;&gt;Configuring the server&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#env-variables&quot;&gt;Env Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-pm2&quot;&gt;Setting up PM2&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#resources&quot;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;deployment&quot;&gt;Deployment&lt;/h2&gt;
+&lt;h3 id=&quot;prepare-the-production-server&quot;&gt;Prepare the production server&lt;/h3&gt;
+&lt;p&gt;Use your preferred cloud platform to create a linux server with specs based on your needs. To access the VPS via SSH, refer to your cloud platform&#39;s docs on how to setup an SSH key on a newly created VPS.
+Once a linux server has been created (I am deploy on a Debian server, hosted at Hetzner), we can then
+prepare the server for production usage.&lt;/p&gt;
+&lt;h4 id=&quot;the-root-user&quot;&gt;The root user&lt;/h4&gt;
+&lt;p&gt;Generally speaking, you should get access to the root user when you create a server, which should allow you to ssh into the server using the command below:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;$ &lt;span class=&quot;token function&quot;&gt;ssh&lt;/span&gt; root@your_server_ip_addr&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Once you have logged in, immediately the first thing to do is to set a password to the root account.&lt;/p&gt;
+&lt;p&gt;Use the command below to change password:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ &lt;span class=&quot;token function&quot;&gt;passwd&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;creating-a-user-account-for-your-application&quot;&gt;Creating a user account for your application&lt;/h4&gt;
+&lt;p&gt;Since working with root directly is generally discouraged for various security and safety reasons, we&#39;ll create a seperate user account with limited permissions who&#39;s job is to run the server.&lt;/p&gt;
+&lt;p&gt;When following the next steps, replace all instances of &lt;code&gt;server_username&lt;/code&gt; with your own username. To be more clear, I&#39;ve included the user performing each action at the beginning of each command.&lt;/p&gt;
+&lt;p&gt;Use the command below to create a new user account:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ adduser server_username&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now provide our new user with admin privileges so we don&#39;t have to switch to root user every time we need to do an administrative task. This will allow the new user to do administrative tasks by prepending &lt;code&gt;sudo&lt;/code&gt; to their commands.&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ &lt;span class=&quot;token function&quot;&gt;usermod&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-aG&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; server_username&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;setting-up-a-firewall&quot;&gt;Setting up a firewall&lt;/h4&gt;
+&lt;p&gt;We can make use of &lt;code&gt;ufw&lt;/code&gt; firewall to limit the extent of ports etc that general public can access. To do this, first make sure to install &lt;code&gt;ufw&lt;/code&gt; on the server:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; ufw&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now that we have &lt;code&gt;ufw&lt;/code&gt; installed, it&#39;s time to configure it. You can try to run the following command to see if we can already start configuring various applications&#39; access through firewall:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ ufw app list&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We need to make sure that the firewall allows SSH connections so that we can log back in next time, we can allow these connections by typing:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ ufw allow OpenSSH&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and then we enable the firewall itself:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ ufw &lt;span class=&quot;token builtin class-name&quot;&gt;enable&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can check the status of the firewall by typing in:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ ufw status&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;setting-up-ssh-login-for-the-application-user&quot;&gt;Setting up SSH login for the application user&lt;/h4&gt;
+&lt;p&gt;For our application user that we created a few steps back, if you try to ssh using the command below:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;$ &lt;span class=&quot;token function&quot;&gt;ssh&lt;/span&gt; server_username@your_server_addr&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You will be prompted to enter the user password to login, but since we already have our public SSH key on the server configured for the &lt;code&gt;root&lt;/code&gt; user, we can just copy over the root user&#39;s &lt;code&gt;.ssh/authorized_keys&lt;/code&gt; folder into our server user&#39;s home folder.&lt;/p&gt;
+&lt;p&gt;We can do this using rsync:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;root $ &lt;span class=&quot;token function&quot;&gt;rsync&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--archive&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--chown&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;server_username:server_username ~/.ssh /home/server_username/.ssh&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you should be able to simply SSH into your server without typing in your password.&lt;/p&gt;
+&lt;h3 id=&quot;setting-up-nodejs&quot;&gt;Setting up NodeJS&lt;/h3&gt;
+&lt;p&gt;Now, let&#39;s use our newly created application user to setup NodeJS.
+For this, I&#39;m using &lt;a href=&quot;https://github.com/nodesource/distributions&quot;&gt;NodeSource&lt;/a&gt; as they provide binary distributions for most major versions of NodeJS.&lt;/p&gt;
+&lt;p&gt;Simply follow the installation instructions from their github page. As I am using a debian server, I&#39;ll be using the instructions for Debian:&lt;/p&gt;
+&lt;h4 id=&quot;install-curl&quot;&gt;Install curl&lt;/h4&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;download-the-setup-script&quot;&gt;Download the setup script&lt;/h4&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-fsSL&lt;/span&gt; https://deb.nodesource.com/setup_22.x &lt;span class=&quot;token parameter variable&quot;&gt;-o&lt;/span&gt; nodesource_setup.sh&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;run-the-setup-script-with-sudo&quot;&gt;Run the setup script with sudo&lt;/h4&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-E&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;bash&lt;/span&gt; nodesource_setup.sh&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;install-node-js&quot;&gt;Install Node.js&lt;/h4&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt-get&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-y&lt;/span&gt; nodejs&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;verify-that-node-is-installed&quot;&gt;Verify that node is installed&lt;/h4&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-v&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;setting-up-npm-yarn&quot;&gt;Setting up NPM / Yarn&lt;/h4&gt;
+&lt;p&gt;Generally speaking, NPM should come part of the Node.js package, so if you have nodejs installed, you should be able to also use Npm, you can verify that npm is installed by typing:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;npm&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-v&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;installing-build-essential-package&quot;&gt;Installing build-essential package&lt;/h4&gt;
+&lt;p&gt;For some NPM packages, we often need to locally compile the native binaries from source, for example in the case of node-gyp. To make it possible, we can install the &lt;code&gt;build-essential&lt;/code&gt; package as it will install various tools like &lt;code&gt;make&lt;/code&gt;, &lt;code&gt;gcc&lt;/code&gt; etc on our system.&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; build-essential&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;setting-up-yarn-optional&quot;&gt;Setting up Yarn (optional)&lt;/h4&gt;
+&lt;p&gt;My project uses yarn for it&#39;s package management, so let&#39;s install yarn:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;npm&lt;/span&gt; i &lt;span class=&quot;token parameter variable&quot;&gt;-g&lt;/span&gt; yarn@latest     &lt;span class=&quot;token comment&quot;&gt;# installation&lt;/span&gt;
+server_username $ &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-v&lt;/span&gt;                  &lt;span class=&quot;token comment&quot;&gt;# verification&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;copying-over-the-server-code&quot;&gt;Copying over the server code&lt;/h3&gt;
+&lt;p&gt;You can just copy over the server code from your local machine to the server by using &lt;code&gt;scp&lt;/code&gt;. But before you do that, make sure that you make a production copy of your server folder and then remove any unwanted folders like &lt;code&gt;.git&lt;/code&gt;, &lt;code&gt;node_modules&lt;/code&gt;, &lt;code&gt;.yarn&lt;/code&gt; etc.&lt;/p&gt;
+&lt;p&gt;Run this on your local machine to copy over the server code:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;$ &lt;span class=&quot;token function&quot;&gt;scp&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-rp&lt;/span&gt; ./prod_server_folder server_username@your_server_addr:/home/server_username/app&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You might have to rename or move the server folder to an appropriate directory on the server once you have uploaded everything. I uploaded my local prod version of the server code (in &lt;code&gt;prod_server_folder&lt;/code&gt;) to my server at &lt;code&gt;/home/server_username/app&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&quot;configuring-the-server&quot;&gt;Configuring the server&lt;/h3&gt;
+&lt;p&gt;At this point, you should just be able to use &lt;code&gt;node path/to/server.js&lt;/code&gt; or equivalent to run the server. Please note that the server will not be available to public yet as we currently only allow SSH connections through the &lt;code&gt;ufw&lt;/code&gt; firewall.&lt;/p&gt;
+&lt;p&gt;Before we configure the firewall, we should first setup the server itself.&lt;/p&gt;
+&lt;h4 id=&quot;env-variables&quot;&gt;Env Variables&lt;/h4&gt;
+&lt;p&gt;Make sure to update the env variables file in the server folder, specifically configure the server to run on port &lt;code&gt;80&lt;/code&gt; (since we&#39;re only doing http for now) as well as any other env variables like the database URL etc.&lt;/p&gt;
+&lt;p&gt;At the end of this step you should be able to already start a production server, albiet without any daemon in place to handle automatic restarts etc.&lt;/p&gt;
+&lt;h3 id=&quot;setting-up-pm2&quot;&gt;Setting up PM2&lt;/h3&gt;
+&lt;p&gt;PM2 is going to be our daemon controller, it will setup a daemon for our server so that any time our server has to restart, the daemon will make sure that the server is also restarted and up and running again.&lt;/p&gt;
+&lt;p&gt;To install PM2, just run:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;npm&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; pm2@latest &lt;span class=&quot;token parameter variable&quot;&gt;-g&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you can instruct PM2 to start the server&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; pm2 start path/to/server.js&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will add your server to PM2&#39;s process list. Applications running on this process list will be automatically restarted if the app crashes or is killed. We can also take one additional step to make sure that the app is run on system startup:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; pm2 startup systemd&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will ask you to run a specific command with sudo permissions in your terminal, once that is done, a &lt;a href=&quot;https://wiki.archlinux.org/title/Systemd#Using_units&quot;&gt;systemd unit&lt;/a&gt; is created, that runs a pm2 process on boot for &lt;code&gt;server_username&lt;/code&gt; user. This pm2 instance in turn will run the server itself.&lt;/p&gt;
+&lt;p&gt;Now that the server is up and running you should do one last thing before accessing the server and that is to allow http connections on port 80.&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; ufw allow &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# alternative: sudo ufw allow http&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can verify that access to port 80 is allowed by typing in:&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;server_username $ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; ufw status&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Congratulations! You have accessfully setup a nodejs server for production!&lt;/p&gt;
+&lt;p&gt;You can now visit &lt;code&gt;http://your_server_addr&lt;/code&gt; to checkout your newly setup server!&lt;/p&gt;
+&lt;h2 id=&quot;resources&quot;&gt;Resources&lt;/h2&gt;
+&lt;p&gt;Now that we&#39;ve got the basics sorted, there&#39;s still a lot more we can do such as setting up Let&#39;s Encrypt and configuring Database access etc. I have some resources below that I&#39;ve used to write this blog, feel free to take a look at them to go more indepth into some of the more advanced concepts.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/deployment&quot;&gt;Express Tutorial Part 7: Deploying to production&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu&quot;&gt;How to Set Up a Firewall with UFW on Ubuntu&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/understanding-nginx-http-proxying-load-balancing-buffering-and-caching&quot;&gt;Understanding Nginx HTTP Proxying, Load Balancing, Buffering, and Caching&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-20-04&quot;&gt;How To Set Up a Node.js Application for Production on Ubuntu&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04&quot;&gt;How To Configure Remote Access for MongoDB on Ubuntu 20.04&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/&quot;&gt;https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+  </entry>
   <entry>
     <title>Hello World</title>
     <link href="https://alicekile.dev/blog/helloworld/" />
