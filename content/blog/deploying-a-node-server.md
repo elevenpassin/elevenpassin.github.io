@@ -1,7 +1,7 @@
 ---
 title: Deploying a Node Server on a bare metal VPS
 description: This was my exploration on how to deploy a Node.js to production on a bare metal server.
-date: 2025-12-8
+date: 2025-12-08
 tags: ["posts", "node.js", "server", "vps", "cloud", "production", "linux", "hetzner"]
 ---
 
