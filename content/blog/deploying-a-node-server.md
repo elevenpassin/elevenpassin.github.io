@@ -258,4 +258,4 @@ Now that we've got the basics sorted, there's still a lot more we can do such as
 - [Understanding Nginx HTTP Proxying, Load Balancing, Buffering, and Caching](https://www.digitalocean.com/community/tutorials/understanding-nginx-http-proxying-load-balancing-buffering-and-caching)
 - [How To Set Up a Node.js Application for Production on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-20-04)
 - [How To Configure Remote Access for MongoDB on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04)
-- [https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/](https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/)
+- [How to use Let's Encrypt with Node.js and Express](https://advancedweb.hu/how-to-use-lets-encrypt-with-node-js-and-express/)
