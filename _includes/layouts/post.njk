@@ -7,14 +7,16 @@ layout: layouts/page.njk
 {%- css %}{% include "public/styles/prism-diff.css" %}{%- endcss %}
 {%- css %}{% include "public/styles/post.css" %}{%- endcss %}
 
-<section class="page-section">
+
 <h1>{{ title }}</h1>
 <ul class="post-metadata">
   <li>
-    <b>Published Date:</b> <time datetime="{{ page.date | htmlDateString }}">{{ page.date | readableDate }}</time>
+    <b>Published Date:</b>
+    <time datetime="{{ page.date | htmlDateString }}">{{ page.date | readableDate }}</time>
   </li>
   <li>
-    <b>Tags: </b>
+    <b>Tags:
+    </b>
     {%- for tag in tags | filterTagList %}
       {%- set tagUrl %}/tags/{{ tag | slugify }}/{% endset %}
       <a href="{{ tagUrl }}" class="post-tag">{{ tag }}</a>
@@ -32,13 +34,12 @@ layout: layouts/page.njk
         <li class="links-nextprev-prev">← Previous<br>
             <a href="{{ previousPost.url }}">{{ previousPost.data.title }}</a>
           </li>
-        {% endif %}
-        {%- if nextPost %}
-          <li class="links-nextprev-next">Next →<br>
-              <a href="{{ nextPost.url }}">{{ nextPost.data.title }}</a>
-            </li>
-          {% endif %}
-        </ul>
-      {%- endif %}
-    {%- endif %}
-</section>
+      {% endif %}
+      {%- if nextPost %}
+        <li class="links-nextprev-next">Next →<br>
+          <a href="{{ nextPost.url }}">{{ nextPost.data.title }}</a>
+        </li>
+      {% endif %}
+    </ul>
+  {%- endif %}
+{%- endif %}
