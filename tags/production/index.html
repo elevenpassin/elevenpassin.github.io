@@ -22,9 +22,37 @@
   margin-bottom: 10px;
 }
 .postlist { counter-reset: start-from
-  2 }
+2 }
+body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}
 .page-header {
-  margin-bottom: 20px;
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
@@ -76,28 +104,30 @@
 </header>
 
 
-<h1 id="tagged-production">Tagged “production”</h1>
+<main>
+  <section class="page-section">
+    <h1 id="tagged-production">Tagged “production”</h1>
 
 
 
-<section class="page-section">
-  <ol reversed="" class="postlist">
-    
-      <li class="postlist-item">
-        <a href="/blog/deploying-a-node-server/" class="postlist-link">
-          
-            Deploying a Node Server on a bare metal VPS
-          
-        </a>
-        <time class="postlist-date" datetime="2025-12-08">December 2025</time>
-      </li>
-    
-  </ol>
-</section>
+<ol reversed="" class="postlist">
+  
+    <li class="postlist-item">
+      <a href="/blog/2025/dec/deploying-a-node-server/" class="postlist-link">
+        
+          Deploying a Node Server on a bare metal VPS
+        
+      </a>
+      <time class="postlist-date" datetime="2025-12-08">December 2025</time>
+    </li>
+  
+</ol>
 
 
 <p>See <a href="/tags/">all tags</a>.</p>
 
+  </section>
+</main>
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>
   </body>

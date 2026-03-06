@@ -194,8 +194,36 @@ pre[class*="language-diff-"] {
   list-style: none;
   padding: 0;
 }
+body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}
 .page-header {
-  margin-bottom: 20px;
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
@@ -247,17 +275,21 @@ pre[class*="language-diff-"] {
 </header>
 
 
+<main>
+  <section class="page-section">
+    
 
 
 
-<section class="page-section">
 <h1 id="deploying-a-node-server-on-a-bare-metal-vps">Deploying a Node Server on a bare metal VPS</h1>
 <ul class="post-metadata">
   <li>
-    <b>Published Date:</b> <time datetime="2025-12-08">08 December 2025</time>
+    <b>Published Date:</b>
+    <time datetime="2025-12-08">08 December 2025</time>
   </li>
   <li>
-    <b>Tags: </b>
+    <b>Tags:
+    </b>
       <a href="/tags/node-js/" class="post-tag">node.js</a>,
       <a href="/tags/server/" class="post-tag">server</a>,
       <a href="/tags/vps/" class="post-tag">vps</a>,
@@ -405,10 +437,11 @@ server_username $ <span class="token function">yarn</span> <span class="token pa
         <li class="links-nextprev-prev">← Previous<br>
             <a href="/blog/helloworld/">Hello World</a>
           </li>
-        
-        </ul>
-</section>
+      
+    </ul>
 
+  </section>
+</main>
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>
   </body>

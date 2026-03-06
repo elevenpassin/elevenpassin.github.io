@@ -9,8 +9,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="/styles/base.css" rel="stylesheet">
-    <style>.page-header {
-  margin-bottom: 20px;
+    <style>body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}
+.page-header {
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
@@ -62,9 +90,26 @@
 </header>
 
 
-<h1 id="tags">Tags</h1>
+<main>
+  <section class="page-section">
+    <h1 id="tags">Tags</h1>
 
 <ul>
+
+	
+	<li><a href="/tags/second/" class="post-tag">second</a></li>
+
+	
+	<li><a href="/tags/another-tag/" class="post-tag">another tag</a></li>
+
+	
+	<li><a href="/tags/number-2/" class="post-tag">number 2</a></li>
+
+	
+	<li><a href="/tags/second-tag/" class="post-tag">second tag</a></li>
+
+	
+	<li><a href="/tags/posts-with-two-tags/" class="post-tag">posts with two tags</a></li>
 
 	
 	<li><a href="/tags/node-js/" class="post-tag">node.js</a></li>
@@ -87,23 +132,10 @@
 	
 	<li><a href="/tags/hetzner/" class="post-tag">hetzner</a></li>
 
-	
-	<li><a href="/tags/second/" class="post-tag">second</a></li>
-
-	
-	<li><a href="/tags/another-tag/" class="post-tag">another tag</a></li>
-
-	
-	<li><a href="/tags/number-2/" class="post-tag">number 2</a></li>
-
-	
-	<li><a href="/tags/second-tag/" class="post-tag">second tag</a></li>
-
-	
-	<li><a href="/tags/posts-with-two-tags/" class="post-tag">posts with two tags</a></li>
-
 </ul>
 
+  </section>
+</main>
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>
   </body>

@@ -1,0 +1,19 @@
+body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}

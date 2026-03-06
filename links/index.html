@@ -9,8 +9,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="/styles/base.css" rel="stylesheet">
-    <style>.page-header {
-  margin-bottom: 20px;
+    <style>body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}
+.page-header {
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
@@ -62,7 +90,9 @@
 </header>
 
 
-<section>
+<main>
+  <section class="page-section">
+    <section>
   <table>
       <thead>
         <tr>
@@ -93,6 +123,8 @@
     </table>
 </section>
 
+  </section>
+</main>
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>
   </body>

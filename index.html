@@ -9,8 +9,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="/styles/base.css" rel="stylesheet">
-    <style>.page-header {
-  margin-bottom: 20px;
+    <style>body {
+  display: grid;
+  grid-template-rows: [header-start] 50px [header-end content-start] auto [content-end];
+  grid-template-columns: [page-start] auto [content-start] 45% [content-end] auto [page-end];
+}
+
+main {
+  display: grid;
+  grid-area: page;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding-top: 20px;
+}
+
+.page-section {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: subgrid;
+}
+.page-header {
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
@@ -29,6 +57,29 @@
 .page-header li#nav-item-home {
   font-size: 1.5rem;
   line-height: 1.5rem;
+}
+body {
+  display: grid;
+  grid-template-rows: [page-start] 1fr [aboutme-start] auto [aboutme-end] 1fr [page-end];
+  grid-template-columns: [page-start] 1fr [aboutme-start] auto [aboutme-end] 1fr [page-end];
+  height: 100vh;
+  width: 100vw;
+}
+
+
+.about-me {
+  grid-area: aboutme;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+
+.page-header {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
 }</style>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-E1E07YLH8W"></script>
@@ -45,19 +96,10 @@
     
 
 
-<section class="jumbotron page-section">
-  <div class="img"></div>
-  <a href="/">
+<section class="jumbotron about-me">
+  <a href="/" class="home-btn">
     <h1 id="alice-kile">Alice Kile</h1>
   </a>
-  <p>
-    I’m a full stack developer with experience in ecommerce and design systems. I believe in a strong cohesion of Business, User Experience, Technology for success!<br><br>
-
-    Topics I find interesting include: <a href="https://www.fsf.org/about/what-is-free-software" alt="Link to FSF's definition of Free Software">free software</a>, web, ux design, design systems, linux, nodejs, react, p2p, fediverse, accessibility, c, c++, javascript, html, css.<br><br>
-  </p>
-  <p>Find my resume
-    <a href="/docs/resume.pdf" alt="Alice's resume">here</a>
-  </p>
   
 <header class="page-header">
   <nav>
@@ -73,6 +115,14 @@
   </nav>
 </header>
 
+  <p>
+    I’m a full stack developer with experience in ecommerce and design systems. I believe in a strong cohesion of Business, User Experience, Technology for success!<br><br>
+
+    Topics I find interesting include: <a href="https://www.fsf.org/about/what-is-free-software" alt="Link to FSF's definition of Free Software">free software</a>, web, ux design, design systems, linux, nodejs, react, p2p, fediverse, accessibility, c, c++, javascript, html, css.<br><br>
+  </p>
+  <p>Find my resume
+    <a href="/docs/resume.pdf" alt="Alice's resume">here</a>
+  </p>
 </section>
 
     <script type="module" async="" src="/scripts/darkmode.js"></script>

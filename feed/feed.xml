@@ -12,45 +12,45 @@
   </author>
   <entry>
     <title>Deploying a Node Server on a bare metal VPS</title>
-    <link href="https://alicekile.dev/blog/deploying-a-node-server/" />
+    <link href="https://alicekile.dev/blog/2025/dec/deploying-a-node-server/" />
     <updated>2025-12-08T00:00:00Z</updated>
-    <id>https://alicekile.dev/blog/deploying-a-node-server/</id>
+    <id>https://alicekile.dev/blog/2025/dec/deploying-a-node-server/</id>
     <content type="html">&lt;p&gt;For a personal project I was working on, I wanted to deploy a nodejs server directly on the VPS without using any of the container solutions as it was a fairly basic project. I came up with a deployment guide for that project, which I&#39;m now publishing to the public.&lt;/p&gt;
 &lt;h2 id=&quot;table-of-contents&quot;&gt;Table Of Contents&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#table-of-contents&quot;&gt;Table Of Contents&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#deployment&quot;&gt;Deployment&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#table-of-contents&quot;&gt;Table Of Contents&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#deployment&quot;&gt;Deployment&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#prepare-the-production-server&quot;&gt;Prepare the production server&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#prepare-the-production-server&quot;&gt;Prepare the production server&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#the-root-user&quot;&gt;The root user&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#creating-a-user-account-for-your-application&quot;&gt;Creating a user account for your application&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-a-firewall&quot;&gt;Setting up a firewall&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-ssh-login-for-the-application-user&quot;&gt;Setting up SSH login for the application user&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#the-root-user&quot;&gt;The root user&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#creating-a-user-account-for-your-application&quot;&gt;Creating a user account for your application&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-a-firewall&quot;&gt;Setting up a firewall&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-ssh-login-for-the-application-user&quot;&gt;Setting up SSH login for the application user&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-nodejs&quot;&gt;Setting up NodeJS&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-nodejs&quot;&gt;Setting up NodeJS&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#install-curl&quot;&gt;Install curl&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#download-the-setup-script&quot;&gt;Download the setup script&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#run-the-setup-script-with-sudo&quot;&gt;Run the setup script with sudo&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#install-nodejs&quot;&gt;Install Node.js&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#verify-that-node-is-installed&quot;&gt;Verify that node is installed&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-npm--yarn&quot;&gt;Setting up NPM / Yarn&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#installing-build-essential-package&quot;&gt;Installing build-essential package&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-yarn-optional&quot;&gt;Setting up Yarn (optional)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#install-curl&quot;&gt;Install curl&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#download-the-setup-script&quot;&gt;Download the setup script&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#run-the-setup-script-with-sudo&quot;&gt;Run the setup script with sudo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#install-nodejs&quot;&gt;Install Node.js&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#verify-that-node-is-installed&quot;&gt;Verify that node is installed&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-npm--yarn&quot;&gt;Setting up NPM / Yarn&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#installing-build-essential-package&quot;&gt;Installing build-essential package&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-yarn-optional&quot;&gt;Setting up Yarn (optional)&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#copying-over-the-server-code&quot;&gt;Copying over the server code&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#configuring-the-server&quot;&gt;Configuring the server&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#copying-over-the-server-code&quot;&gt;Copying over the server code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#configuring-the-server&quot;&gt;Configuring the server&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#env-variables&quot;&gt;Env Variables&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#env-variables&quot;&gt;Env Variables&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#setting-up-pm2&quot;&gt;Setting up PM2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#setting-up-pm2&quot;&gt;Setting up PM2&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/deploying-a-node-server/#resources&quot;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://alicekile.dev/blog/2025/dec/deploying-a-node-server/#resources&quot;&gt;Resources&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&quot;deployment&quot;&gt;Deployment&lt;/h2&gt;
 &lt;h3 id=&quot;prepare-the-production-server&quot;&gt;Prepare the production server&lt;/h3&gt;
