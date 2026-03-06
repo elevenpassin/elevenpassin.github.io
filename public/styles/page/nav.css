@@ -1,5 +1,14 @@
 .page-header {
-  margin-bottom: 20px;
+  display: grid;
+  grid-column: content;
+  grid-row: header;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.page-header nav {
+  display: grid;
+  grid-area: navigation;
 }
 
 .page-header ol {
