@@ -6,11 +6,11 @@ layout: layouts/base.njk
 
 {%- css %}{% include "public/styles/page/style.css" %}{%- endcss %}
 
-<section class="jumbotron page-section">
-  <div class="img"></div>
-  <a href="/">
+<section class="jumbotron about-me">
+  <a href="/" class="home-btn">
     <h1>Alice Kile</h1>
   </a>
+  {% include "nav.njk" %}
   <p>
     I’m a full stack developer with experience in ecommerce and design systems. I believe in a strong cohesion of Business, User Experience, Technology for success!<br /><br />
 
@@ -19,5 +19,6 @@ layout: layouts/base.njk
   <p>Find my resume
     <a href="/docs/resume.pdf" alt="Alice's resume">here</a>
   </p>
-  {% include "nav.njk" %}
 </section>
+
+{%- css %}{% include "public/styles/index.css" %}{%- endcss %}
